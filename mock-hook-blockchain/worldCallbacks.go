@@ -19,7 +19,7 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 }
 
 // NewAddress adapts between K model and elrond function
-func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64) ([]byte, error) {
+func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	// empty byte array signals not implemented, fallback to default
 	return []byte{}, nil
 }
