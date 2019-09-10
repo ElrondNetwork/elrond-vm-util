@@ -18,13 +18,23 @@ func defaultAccount(address []byte) *Account {
 	}
 }
 
-// UpdateBalance changes balance of an account
+// UpdateBalance sets a new balance to an account
 func (b *BlockchainHookMock) UpdateBalance(address []byte, newBalance *big.Int) error {
 	acct := b.AcctMap.GetAccount(address)
 	if acct == nil {
 		return errors.New("method UpdateBalance expects an existing address")
 	}
 	acct.Balance = newBalance
+	return nil
+}
+
+// UpdateBalanceWithDelta changes balance of an account by a given amount
+func (b *BlockchainHookMock) UpdateBalanceWithDelta(address []byte, balanceDelta *big.Int) error {
+	acct := b.AcctMap.GetAccount(address)
+	if acct == nil {
+		return errors.New("method UpdateBalance expects an existing address")
+	}
+	acct.Balance = big.NewInt(0).Add(acct.Balance, balanceDelta)
 	return nil
 }
 
