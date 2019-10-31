@@ -86,3 +86,58 @@ func (b *BlockchainHookMock) GetBlockhash(offset *big.Int) ([]byte, error) {
 	}
 	return b.Blockhashes[offsetInt32], nil
 }
+
+// LastNonce returns the nonce from from the last committed block
+func (b *BlockchainHookMock) LastNonce() uint64 {
+	return 0
+}
+
+// LastRound returns the round from the last committed block
+func (b *BlockchainHookMock) LastRound() uint64 {
+	return 0
+}
+
+// LastTimeStamp returns the timeStamp from the last committed block
+func (b *BlockchainHookMock) LastTimeStamp() uint64 {
+	return 0
+}
+
+// LastRandomSeed returns the random seed from the last committed block
+func (b *BlockchainHookMock) LastRandomSeed() []byte {
+	return nil
+}
+
+// LastEpoch returns the epoch from the last committed block
+func (b *BlockchainHookMock) LastEpoch() uint32 {
+	return 0
+}
+
+// GetStateRootHash returns the state root hash from the last committed block
+func (b *BlockchainHookMock) GetStateRootHash() []byte {
+	return nil
+}
+
+// CurrentNonce returns the nonce from the current block
+func (b *BlockchainHookMock) CurrentNonce() uint64 {
+	return 0
+}
+
+// CurrentRound returns the round from the current block
+func (b *BlockchainHookMock) CurrentRound() uint64 {
+	return 0
+}
+
+// CurrentTimeStamp return the timestamp from the current block
+func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
+	return 0
+}
+
+// CurrentRandomSeed returns the random seed from the current header
+func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
+	return nil
+}
+
+// CurrentEpoch returns the current epoch
+func (b *BlockchainHookMock) CurrentEpoch() uint32 {
+	return 0
+}
