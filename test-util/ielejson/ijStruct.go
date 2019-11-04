@@ -28,8 +28,8 @@ type Account struct {
 
 // StorageKeyValuePair is a json key value pair in the storage map.
 type StorageKeyValuePair struct {
-	Key   *big.Int
-	Value *big.Int
+	Key   []byte
+	Value []byte
 }
 
 // Block is a json object representing a block.

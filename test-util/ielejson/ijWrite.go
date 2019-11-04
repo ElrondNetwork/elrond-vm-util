@@ -61,7 +61,7 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 		acctOJ.Put("balance", intToOJ(account.Balance))
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
-			storageOJ.Put(intToString(st.Key), intToOJ(st.Value))
+			storageOJ.Put(byteArrayToString(st.Key), stringToOJ(byteArrayToString(st.Value)))
 		}
 		acctOJ.Put("storage", storageOJ)
 		acctOJ.Put("code", stringToOJ(account.OriginalCode))

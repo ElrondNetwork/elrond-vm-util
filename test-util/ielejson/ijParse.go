@@ -153,16 +153,22 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				return nil, errors.New("invalid account storage")
 			}
 			for _, storageKvp := range storageMap.OrderedKV {
-				intKey := big.NewInt(0)
-				_, keyOk := intKey.SetString(storageKvp.Key, 0)
-				if !keyOk {
+				byteKey, keyOk := processByteArray(storageKvp.Key)
+				if keyOk != nil {
 					return nil, errors.New("invalid account storage key")
 				}
-				intVal, valOk := parseBigInt(storageKvp.Value)
-				if !valOk {
+				strVal, valStrOk := parseString(storageKvp.Value)
+				if !valStrOk {
 					return nil, errors.New("invalid account storage value")
 				}
-				stElem := StorageKeyValuePair{Key: intKey, Value: intVal}
+				byteVal, valOk := processByteArray(strVal)
+				if valOk != nil {
+					return nil, errors.New("invalid account storage value")
+				}
+				stElem := StorageKeyValuePair{
+					Key:   byteKey,
+					Value: byteVal,
+				}
 				acct.Storage = append(acct.Storage, &stElem)
 			}
 		}
@@ -507,6 +513,20 @@ func processAccountAddress(addrRaw string) ([]byte, error) {
 		return []byte{}, errors.New("account address should be hex representation starting with '0x'")
 	}
 	return hex.DecodeString(addrRaw[2:])
+}
+
+func processByteArray(addrRaw string) ([]byte, error) {
+	if len(addrRaw) == 0 {
+		return []byte{}, nil
+	}
+	if !(strings.HasPrefix(addrRaw, "0x") || strings.HasPrefix(addrRaw, "0X")) {
+		return []byte{}, errors.New("expected hex representation starting with '0x'")
+	}
+	str := addrRaw[2:]
+	if len(str)%2 == 1 {
+		str = "0" + str
+	}
+	return hex.DecodeString(str)
 }
 
 func processStringList(obj interface{}) ([]string, bool) {

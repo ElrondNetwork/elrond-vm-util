@@ -72,7 +72,9 @@ func (b *BlockchainHookMock) UpdateAccounts(modifiedAccounts []*vmi.OutputAccoun
 			acct.Balance = modAcct.Balance
 		}
 		acct.Nonce = modAcct.Nonce
-		acct.Code = modAcct.Code
+		if len(modAcct.Code) > 0 {
+			acct.Code = modAcct.Code
+		}
 
 		for _, stu := range modAcct.StorageUpdates {
 			acct.Storage[string(stu.Offset)] = stu.Data
