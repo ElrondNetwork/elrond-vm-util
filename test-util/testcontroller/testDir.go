@@ -23,11 +23,12 @@ func isExcluded(excludedFilePatterns []string, testPath string, generalTestPath 
 	return false
 }
 
-// RunAllIeleTestsInDirectory walks directory, parses and prepares all .iele.json tests,
+// RunAllJSONTestsInDirectory walks directory, parses and prepares all json tests,
 // then calls testExecutor for each of them.
-func RunAllIeleTestsInDirectory(
+func RunAllJSONTestsInDirectory(
 	generalTestPath string,
 	specificTestPath string,
+	allowedSuffix string,
 	excludedFilePatterns []string,
 	testExecutor VMTestExecutor) error {
 
@@ -35,7 +36,7 @@ func RunAllIeleTestsInDirectory(
 	var nrPassed, nrFailed, nrSkipped int
 
 	err := filepath.Walk(mainDirPath, func(testFilePath string, info os.FileInfo, err error) error {
-		if strings.HasSuffix(testFilePath, ".iele.json") {
+		if strings.HasSuffix(testFilePath, allowedSuffix) {
 			fmt.Printf("Test: %s ... ", shortenTestPath(testFilePath, generalTestPath))
 			if isExcluded(excludedFilePatterns, testFilePath, generalTestPath) {
 				nrSkipped++
