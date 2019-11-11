@@ -42,7 +42,7 @@ func RunAllJSONTestsInDirectory(
 				nrSkipped++
 				fmt.Print("  skip\n")
 			} else {
-				testErr := RunSingleIeleTest(testFilePath, testExecutor)
+				testErr := RunSingleJSONTest(testFilePath, testExecutor)
 				if testErr == nil {
 					nrPassed++
 					fmt.Print("  ok\n")

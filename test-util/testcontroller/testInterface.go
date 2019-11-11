@@ -1,6 +1,6 @@
 package testcontroller
 
-import ij "github.com/ElrondNetwork/elrond-vm-util/test-util/ielejson"
+import ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 
 // VMTestExecutor describes a component that can run a VM test.
 type VMTestExecutor interface {

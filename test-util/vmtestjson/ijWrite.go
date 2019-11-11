@@ -1,4 +1,4 @@
-package ielejson
+package vmtestjson
 
 import (
 	"encoding/hex"

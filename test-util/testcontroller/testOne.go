@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/ielejson"
+	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-// RunSingleIeleTest parses and prepares test, then calls testCallback.
-func RunSingleIeleTest(testFilePath string, testExecutor VMTestExecutor) error {
+// RunSingleJSONTest parses and prepares test, then calls testCallback.
+func RunSingleJSONTest(testFilePath string, testExecutor VMTestExecutor) error {
 	var err error
 	testFilePath, err = filepath.Abs(testFilePath)
 	if err != nil {
@@ -47,10 +47,6 @@ func RunSingleIeleTest(testFilePath string, testExecutor VMTestExecutor) error {
 			return testErr
 		}
 	}
-
-	// toPath := strings.Replace(testFilePath, "iele-v2", "iele-v3", 1)
-	// fmt.Println(toPath)
-	// saveModifiedTest(toPath, top)
 
 	return nil
 }
