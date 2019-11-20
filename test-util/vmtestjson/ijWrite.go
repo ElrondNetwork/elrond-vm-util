@@ -110,7 +110,7 @@ func transactionToOJ(tx *Transaction) oj.OJsonObject {
 
 	var argList []oj.OJsonObject
 	for _, arg := range tx.Arguments {
-		argList = append(argList, stringToOJ(byteArrayToString(arg)))
+		argList = append(argList, stringToOJ(argumentToString(arg)))
 	}
 	argOJ := oj.OJsonList(argList)
 	transactionOJ.Put("arguments", &argOJ)
@@ -214,6 +214,14 @@ func intToString(i *big.Int) string {
 	str = "0x" + str
 	if isNegative {
 		str = "-" + str
+	}
+	return str
+}
+
+func argumentToString(arg Argument) string {
+	str := intToString(arg.value)
+	if arg.forceSign && arg.value.Sign() > 0 {
+		str = "+" + str
 	}
 	return str
 }

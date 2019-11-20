@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
@@ -584,12 +583,12 @@ func processByteArrayList(obj interface{}) ([][]byte, bool) {
 	return result, true
 }
 
-func processArgumentList(obj interface{}) ([][]byte, bool) {
+func processArgumentList(obj interface{}) ([]Argument, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
 	}
-	var result [][]byte
+	var result []Argument
 	for _, elemRaw := range listRaw.AsList() {
 		strRaw, strOk := parseString(elemRaw)
 		if !strOk {
@@ -603,7 +602,12 @@ func processArgumentList(obj interface{}) ([][]byte, bool) {
 		if !parseOk {
 			return nil, false
 		}
-		result = append(result, twos.ToBytes(bi))
+
+		forceSign := len(strRaw) > 0 && (strRaw[0] == '-' || strRaw[0] == '+')
+		result = append(result, Argument{
+			value:     bi,
+			forceSign: forceSign,
+		})
 	}
 	return result, true
 }
