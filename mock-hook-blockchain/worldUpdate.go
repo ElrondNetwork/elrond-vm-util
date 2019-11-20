@@ -41,15 +41,17 @@ func (b *BlockchainHookMock) UpdateBalanceWithDelta(address []byte, balanceDelta
 // UpdateWorldStateBefore performs gas payment, before transaction
 func (b *BlockchainHookMock) UpdateWorldStateBefore(
 	fromAddr []byte,
-	gasLimit *big.Int,
-	gasPrice *big.Int) error {
+	gasLimit uint64,
+	gasPrice uint64) error {
 
 	acct := b.AcctMap.GetAccount(fromAddr)
 	if acct == nil {
 		return errors.New("method UpdateBalance expects an existing address")
 	}
 	acct.Nonce++
-	gasPayment := big.NewInt(0).Mul(gasLimit, gasPrice)
+	gasPayment := big.NewInt(0).Mul(
+		big.NewInt(0).SetUint64(gasLimit),
+		big.NewInt(0).SetUint64(gasPrice))
 	if acct.Balance.Cmp(gasPayment) < 0 {
 		return errors.New("not enough balance to pay gas upfront")
 	}

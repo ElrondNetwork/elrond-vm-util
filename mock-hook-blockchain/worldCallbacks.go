@@ -143,7 +143,7 @@ func (b *BlockchainHookMock) CurrentRound() uint64 {
 
 // CurrentTimeStamp return the timestamp from the current block
 func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
-	return 0
+	return b.CurrentTimestamp
 }
 
 // CurrentRandomSeed returns the random seed from the current header

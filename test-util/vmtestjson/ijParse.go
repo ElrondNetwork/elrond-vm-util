@@ -4,8 +4,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
+	"strconv"
 	"strings"
 
+	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
@@ -250,7 +252,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	for _, kvp := range blrMap.OrderedKV {
 
 		if kvp.Key == "out" {
-			blr.Out, outOk = processBigIntList(kvp.Value)
+			blr.Out, outOk = processByteArrayList(kvp.Value)
 			if !outOk {
 				return nil, errors.New("invalid block result out")
 			}
@@ -365,7 +367,7 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 	for _, kvp := range bltMap.OrderedKV {
 
 		if kvp.Key == "nonce" {
-			blt.Nonce, nonceOk = parseBigInt(kvp.Value)
+			blt.Nonce, nonceOk = parseUint64(kvp.Value)
 			if !nonceOk {
 				return nil, errors.New("invalid block transaction nonce")
 			}
@@ -412,7 +414,7 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 		}
 
 		if kvp.Key == "arguments" {
-			blt.Arguments, argumentsOk = processBigIntList(kvp.Value)
+			blt.Arguments, argumentsOk = processArgumentList(kvp.Value)
 			if !argumentsOk {
 				return nil, errors.New("invalid block transaction arguments")
 			}
@@ -426,14 +428,14 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 		}
 
 		if kvp.Key == "gasPrice" {
-			blt.GasPrice, gasPriceOk = parseBigInt(kvp.Value)
+			blt.GasPrice, gasPriceOk = parseUint64(kvp.Value)
 			if !gasPriceOk {
 				return nil, errors.New("invalid block transaction gasPrice")
 			}
 		}
 
 		if kvp.Key == "gasLimit" {
-			blt.GasLimit, gasLimitOk = parseBigInt(kvp.Value)
+			blt.GasLimit, gasLimitOk = parseUint64(kvp.Value)
 			if !gasLimitOk {
 				return nil, errors.New("invalid block transaction gasLimit")
 			}
@@ -488,7 +490,7 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 		}
 
 		if kvp.Key == "timestamp" {
-			blh.UnixTimestamp, timestampOk = parseBigInt(kvp.Value)
+			blh.Timestamp, timestampOk = parseUint64(kvp.Value)
 			if !timestampOk {
 				return nil, errors.New("invalid block header timestamp")
 			}
@@ -515,14 +517,15 @@ func processAccountAddress(addrRaw string) ([]byte, error) {
 	return hex.DecodeString(addrRaw[2:])
 }
 
-func processByteArray(addrRaw string) ([]byte, error) {
-	if len(addrRaw) == 0 {
+func processByteArray(strRaw string) ([]byte, error) {
+	if len(strRaw) == 0 {
 		return []byte{}, nil
 	}
-	if !(strings.HasPrefix(addrRaw, "0x") || strings.HasPrefix(addrRaw, "0X")) {
+
+	if !(strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X")) {
 		return []byte{}, errors.New("expected hex representation starting with '0x'")
 	}
-	str := addrRaw[2:]
+	str := strRaw[2:]
 	if len(str)%2 == 1 {
 		str = "0" + str
 	}
@@ -568,18 +571,39 @@ func processByteArrayList(obj interface{}) ([][]byte, bool) {
 	}
 	var result [][]byte
 	for _, elemRaw := range listRaw.AsList() {
-		i, iOk := parseBigInt(elemRaw)
-		if !iOk {
+		str, strOk := parseString(elemRaw)
+		if !strOk {
 			return nil, false
 		}
-		switch i.Sign() {
-		case 0:
-			result = append(result, []byte{})
-		case 1:
-			result = append(result, i.Bytes())
-		default:
+		ba, baErr := processByteArray(str)
+		if baErr != nil {
 			return nil, false
 		}
+		result = append(result, ba)
+	}
+	return result, true
+}
+
+func processArgumentList(obj interface{}) ([][]byte, bool) {
+	listRaw, listOk := obj.(*oj.OJsonList)
+	if !listOk {
+		return nil, false
+	}
+	var result [][]byte
+	for _, elemRaw := range listRaw.AsList() {
+		strRaw, strOk := parseString(elemRaw)
+		if !strOk {
+			return nil, false
+		}
+
+		// all arguments get converted to 2's complement bytes
+		bi := new(big.Int)
+		var parseOk bool
+		bi, parseOk = bi.SetString(strRaw, 0)
+		if !parseOk {
+			return nil, false
+		}
+		result = append(result, twos.ToBytes(bi))
 	}
 	return result, true
 }
@@ -598,6 +622,23 @@ func parseBigInt(obj oj.OJsonObject) (*big.Int, bool) {
 	result, parseOk = result.SetString(str.Value, 0)
 	if !parseOk {
 		return nil, false
+	}
+
+	return result, true
+}
+
+func parseUint64(obj oj.OJsonObject) (uint64, bool) {
+	str, isStr := obj.(*oj.OJsonString)
+	if !isStr {
+		return uint64(0), false
+	}
+	if len(str.Value) == 0 {
+		return uint64(0), true // interpret "" as nil, so we can restore to empty string instead of 0
+	}
+
+	result, err := strconv.ParseUint(str.Value, 0, 64)
+	if err != nil {
+		return uint64(0), false
 	}
 
 	return result, true

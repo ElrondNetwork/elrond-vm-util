@@ -93,7 +93,7 @@ func blockToOJ(block *Block) oj.OJsonObject {
 	blockHeaderOJ.Put("gasLimit", intToOJ(block.BlockHeader.GasLimit))
 	blockHeaderOJ.Put("number", intToOJ(block.BlockHeader.Number))
 	blockHeaderOJ.Put("difficulty", intToOJ(block.BlockHeader.Difficulty))
-	blockHeaderOJ.Put("timestamp", intToOJ(block.BlockHeader.UnixTimestamp))
+	blockHeaderOJ.Put("timestamp", uint64ToOJ(block.BlockHeader.Timestamp))
 	blockHeaderOJ.Put("coinbase", intToOJ(block.BlockHeader.Beneficiary))
 	blockOJ.Put("blockHeader", blockHeaderOJ)
 
@@ -102,21 +102,21 @@ func blockToOJ(block *Block) oj.OJsonObject {
 
 func transactionToOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ := oj.NewMap()
-	transactionOJ.Put("nonce", intToOJ(tx.Nonce))
+	transactionOJ.Put("nonce", uint64ToOJ(tx.Nonce))
 	transactionOJ.Put("function", stringToOJ(tx.Function))
-	transactionOJ.Put("gasLimit", intToOJ(tx.GasLimit))
+	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
 	transactionOJ.Put("value", intToOJ(tx.Value))
 	transactionOJ.Put("to", accountAddressToOJ(tx.To))
 
 	var argList []oj.OJsonObject
 	for _, arg := range tx.Arguments {
-		argList = append(argList, intToOJ(arg))
+		argList = append(argList, stringToOJ(byteArrayToString(arg)))
 	}
 	argOJ := oj.OJsonList(argList)
 	transactionOJ.Put("arguments", &argOJ)
 
 	transactionOJ.Put("contractCode", stringToOJ(tx.ContractCode))
-	transactionOJ.Put("gasPrice", intToOJ(tx.GasPrice))
+	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	transactionOJ.Put("from", accountAddressToOJ(tx.From))
 
 	return transactionOJ
@@ -127,7 +127,7 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 
 	var outList []oj.OJsonObject
 	for _, out := range res.Out {
-		outList = append(outList, intToOJ(out))
+		outList = append(outList, stringToOJ(byteArrayToString(out)))
 	}
 	outOJ := oj.OJsonList(outList)
 	resultOJ.Put("out", &outOJ)
@@ -220,6 +220,10 @@ func intToString(i *big.Int) string {
 
 func intToOJ(i *big.Int) oj.OJsonObject {
 	return &oj.OJsonString{Value: intToString(i)}
+}
+
+func uint64ToOJ(i uint64) oj.OJsonObject {
+	return intToOJ(big.NewInt(0).SetUint64(i))
 }
 
 func stringToOJ(str string) oj.OJsonObject {

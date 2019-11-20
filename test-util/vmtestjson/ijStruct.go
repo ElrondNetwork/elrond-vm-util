@@ -41,16 +41,16 @@ type Block struct {
 
 // BlockHeader is a json object representing the block header.
 type BlockHeader struct {
-	Beneficiary   *big.Int // "coinbase"
-	Difficulty    *big.Int
-	Number        *big.Int
-	GasLimit      *big.Int
-	UnixTimestamp *big.Int
+	Beneficiary *big.Int // "coinbase"
+	Difficulty  *big.Int
+	Number      *big.Int
+	GasLimit    *big.Int
+	Timestamp   uint64
 }
 
 // TransactionResult is a json object representing an expected transaction result.
 type TransactionResult struct {
-	Out        []*big.Int
+	Out        [][]byte
 	Status     *big.Int
 	Gas        *big.Int
 	Refund     *big.Int
@@ -68,7 +68,7 @@ type LogEntry struct {
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {
-	Nonce         *big.Int
+	Nonce         uint64
 	Value         *big.Int
 	IsCreate      bool
 	From          []byte
@@ -76,9 +76,9 @@ type Transaction struct {
 	Function      string
 	ContractCode  string
 	AssembledCode string
-	Arguments     []*big.Int
-	GasPrice      *big.Int
-	GasLimit      *big.Int
+	Arguments     [][]byte
+	GasPrice      uint64
+	GasLimit      uint64
 }
 
 // FindAccount searches an account list by address.

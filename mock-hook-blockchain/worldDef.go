@@ -3,6 +3,7 @@ package callbackblockchain
 // BlockchainHookMock provides a mock representation of the blockchain to be used in VM tests.
 type BlockchainHookMock struct {
 	AcctMap                      AccountMap
+	CurrentTimestamp             uint64
 	Blockhashes                  [][]byte
 	mockAddressGenerationEnabled bool
 }
@@ -11,6 +12,7 @@ type BlockchainHookMock struct {
 func NewMock() *BlockchainHookMock {
 	return &BlockchainHookMock{
 		AcctMap:                      NewAccountMap(),
+		CurrentTimestamp:             0,
 		Blockhashes:                  nil,
 		mockAddressGenerationEnabled: false,
 	}
