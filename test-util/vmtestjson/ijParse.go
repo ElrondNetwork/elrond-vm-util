@@ -266,9 +266,11 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 
 		if kvp.Key == "gas" {
 			if isStar(kvp.Value) {
-				blr.Gas = nil
+				blr.CheckGas = false
+				blr.Gas = 0
 			} else {
-				blr.Gas, gasOk = parseBigInt(kvp.Value)
+				blr.CheckGas = true
+				blr.Gas, gasOk = parseUint64(kvp.Value)
 				if !gasOk {
 					return nil, errors.New("invalid block result gas")
 				}
@@ -333,7 +335,7 @@ func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 			}
 			if kvp.Key == "topics" {
 				var topicsOk bool
-				logEntry.Topics, topicsOk = processBigIntList(kvp.Value)
+				logEntry.Topics, topicsOk = processByteArrayList(kvp.Value)
 				if !topicsOk {
 					return nil, errors.New("unmarshalled log entry topics is not big int list")
 				}

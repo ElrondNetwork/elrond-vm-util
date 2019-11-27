@@ -87,14 +87,8 @@ func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
 
 // GetBlockhash should return the hash of the nth previous blockchain.
 // Offset specifies how many blocks we need to look back.
-func (b *BlockchainHookMock) GetBlockhash(offset *big.Int) ([]byte, error) {
-	if !offset.IsUint64() {
-		return nil, errors.New("blockhash offset is too large")
-	}
-	offsetInt32 := int(offset.Int64())
-	if offsetInt32 < 0 {
-		return nil, errors.New("blockhash offset is negative")
-	}
+func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
+	offsetInt32 := int(nonce)
 	if offsetInt32 >= len(b.Blockhashes) {
 		return nil, errors.New("blockhash offset exceeds the blockhashes slice")
 	}

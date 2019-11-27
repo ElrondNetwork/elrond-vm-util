@@ -52,7 +52,8 @@ type BlockHeader struct {
 type TransactionResult struct {
 	Out        [][]byte
 	Status     *big.Int
-	Gas        *big.Int
+	CheckGas   bool
+	Gas        uint64
 	Refund     *big.Int
 	IgnoreLogs bool
 	LogHash    string
@@ -62,7 +63,7 @@ type TransactionResult struct {
 // LogEntry is a json object representing an expected transaction result log entry.
 type LogEntry struct {
 	Address []byte
-	Topics  []*big.Int
+	Topics  [][]byte
 	Data    []byte
 }
 
