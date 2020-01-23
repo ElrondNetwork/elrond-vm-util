@@ -52,6 +52,7 @@ type BlockHeader struct {
 type TransactionResult struct {
 	Out        [][]byte
 	Status     *big.Int
+	Message    string
 	CheckGas   bool
 	Gas        uint64
 	Refund     *big.Int

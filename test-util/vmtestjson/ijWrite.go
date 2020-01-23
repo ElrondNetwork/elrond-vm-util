@@ -133,6 +133,7 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 	resultOJ.Put("out", &outOJ)
 
 	resultOJ.Put("status", intToOJ(res.Status))
+	resultOJ.Put("message", stringToOJ(res.Message))
 	resultOJ.Put("gas", uint64ToOJ(res.Gas))
 	if res.IgnoreLogs {
 		resultOJ.Put("logs", stringToOJ("*"))

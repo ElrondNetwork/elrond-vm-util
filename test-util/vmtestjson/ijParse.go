@@ -246,7 +246,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	}
 
 	blr := TransactionResult{}
-	var outOk, statusOk, gasOk, refundOk bool
+	var outOk, statusOk, messageOk, gasOk, refundOk bool
 
 	for _, kvp := range blrMap.OrderedKV {
 
@@ -261,6 +261,13 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 			blr.Status, statusOk = parseBigInt(kvp.Value)
 			if !statusOk {
 				return nil, errors.New("invalid block result status")
+			}
+		}
+
+		if kvp.Key == "message" {
+			blr.Message, messageOk = parseString(kvp.Value)
+			if !messageOk {
+				return nil, errors.New("invalid block result message")
 			}
 		}
 
