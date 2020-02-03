@@ -73,7 +73,9 @@ func (b *BlockchainHookMock) UpdateAccounts(modifiedAccounts []*vmi.OutputAccoun
 		} else {
 			acct.Balance = modAcct.Balance
 		}
-		acct.Nonce = modAcct.Nonce
+		if modAcct.Nonce > acct.Nonce {
+			acct.Nonce = modAcct.Nonce
+		}
 		if len(modAcct.Code) > 0 {
 			acct.Code = modAcct.Code
 		}
