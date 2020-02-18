@@ -130,7 +130,7 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	}
 
 	acct := Account{}
-	var nonceOk, balanceOk, codeOk bool
+	var nonceOk, balanceOk, codeOk, dataOk bool
 
 	for _, kvp := range acctMap.OrderedKV {
 
@@ -180,6 +180,13 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				return nil, errors.New("invalid account code")
 			}
 			acct.OriginalCode = acct.Code
+		}
+
+		if kvp.Key == "asyncCallData" {
+			acct.AsyncCallData, dataOk = parseString(kvp.Value)
+			if !dataOk {
+				return nil, errors.New("invalid asyncCallData string")
+			}
 		}
 	}
 

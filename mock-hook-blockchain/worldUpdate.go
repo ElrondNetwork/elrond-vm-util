@@ -79,6 +79,9 @@ func (b *BlockchainHookMock) UpdateAccounts(modifiedAccounts []*vmi.OutputAccoun
 		if len(modAcct.Code) > 0 {
 			acct.Code = modAcct.Code
 		}
+		if len(modAcct.Data) > 0 {
+			acct.AsyncCallData = string(modAcct.Data)
+		}
 
 		for _, stu := range modAcct.StorageUpdates {
 			acct.Storage[string(stu.Offset)] = stu.Data
