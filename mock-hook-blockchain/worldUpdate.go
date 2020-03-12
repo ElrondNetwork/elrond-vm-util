@@ -32,7 +32,7 @@ func (b *BlockchainHookMock) UpdateBalance(address []byte, newBalance *big.Int) 
 func (b *BlockchainHookMock) UpdateBalanceWithDelta(address []byte, balanceDelta *big.Int) error {
 	acct := b.AcctMap.GetAccount(address)
 	if acct == nil {
-		return errors.New("method UpdateBalance expects an existing address")
+		return errors.New("method UpdateBalanceWithDelta expects an existing address")
 	}
 	acct.Balance = big.NewInt(0).Add(acct.Balance, balanceDelta)
 	return nil
@@ -46,7 +46,7 @@ func (b *BlockchainHookMock) UpdateWorldStateBefore(
 
 	acct := b.AcctMap.GetAccount(fromAddr)
 	if acct == nil {
-		return errors.New("method UpdateBalance expects an existing address")
+		return errors.New("method UpdateWorldStateBefore expects an existing address")
 	}
 	acct.Nonce++
 	gasPayment := big.NewInt(0).Mul(
