@@ -1,11 +1,8 @@
 package vmtestjson
 
 import (
-	"encoding/hex"
 	"errors"
 	"math/big"
-	"strconv"
-	"strings"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
@@ -61,7 +58,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 				if acctErr != nil {
 					return nil, acctErr
 				}
-				acctAddr, hexErr := processAccountAddress(acctKVP.Key)
+				acctAddr, hexErr := parseAccountAddress(acctKVP.Key)
 				if hexErr != nil {
 					return nil, hexErr
 				}
@@ -94,7 +91,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 
 		if kvp.Key == "blockhashes" {
 			var bhsOk bool
-			test.BlockHashes, bhsOk = processByteArrayList(kvp.Value)
+			test.BlockHashes, bhsOk = parseByteArrayList(kvp.Value)
 			if !bhsOk {
 				return nil, errors.New("unmarshalled blockHashes object is not a list")
 			}
@@ -110,7 +107,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 				if acctErr != nil {
 					return nil, acctErr
 				}
-				acctAddr, hexErr := processAccountAddress(acctKVP.Key)
+				acctAddr, hexErr := parseAccountAddress(acctKVP.Key)
 				if hexErr != nil {
 					return nil, hexErr
 				}
@@ -154,7 +151,7 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				return nil, errors.New("invalid account storage")
 			}
 			for _, storageKvp := range storageMap.OrderedKV {
-				byteKey, keyOk := processByteArray(storageKvp.Key)
+				byteKey, keyOk := parseByteArray(storageKvp.Key)
 				if keyOk != nil {
 					return nil, errors.New("invalid account storage key")
 				}
@@ -162,7 +159,7 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				if !valStrOk {
 					return nil, errors.New("invalid account storage value")
 				}
-				byteVal, valOk := processByteArray(strVal)
+				byteVal, valOk := parseByteArray(strVal)
 				if valOk != nil {
 					return nil, errors.New("invalid account storage value")
 				}
@@ -258,7 +255,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	for _, kvp := range blrMap.OrderedKV {
 
 		if kvp.Key == "out" {
-			blr.Out, outOk = processByteArrayList(kvp.Value)
+			blr.Out, outOk = parseByteArrayList(kvp.Value)
 			if !outOk {
 				return nil, errors.New("invalid block result out")
 			}
@@ -342,14 +339,14 @@ func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 					return nil, errors.New("unmarshalled log entry address is not a json string")
 				}
 				var err error
-				logEntry.Address, err = processAccountAddress(accountStr)
+				logEntry.Address, err = parseAccountAddress(accountStr)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if kvp.Key == "topics" {
 				var topicsOk bool
-				logEntry.Topics, topicsOk = processByteArrayList(kvp.Value)
+				logEntry.Topics, topicsOk = parseByteArrayList(kvp.Value)
 				if !topicsOk {
 					return nil, errors.New("unmarshalled log entry topics is not big int list")
 				}
@@ -420,7 +417,7 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 
 			if !blt.IsCreate {
 				var toErr error
-				blt.To, toErr = processAccountAddress(toStr)
+				blt.To, toErr = parseAccountAddress(toStr)
 				if toErr != nil {
 					return nil, toErr
 				}
@@ -462,7 +459,7 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 				return nil, errors.New("invalid block transaction from")
 			}
 			var fromErr error
-			blt.From, fromErr = processAccountAddress(fromStr)
+			blt.From, fromErr = parseAccountAddress(fromStr)
 			if fromErr != nil {
 				return nil, fromErr
 			}
@@ -522,31 +519,6 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	return &blh, nil
 }
 
-func processAccountAddress(addrRaw string) ([]byte, error) {
-	if len(addrRaw) == 0 {
-		return []byte{}, errors.New("missing account address")
-	}
-	if !(strings.HasPrefix(addrRaw, "0x") || strings.HasPrefix(addrRaw, "0X")) {
-		return []byte{}, errors.New("account address should be hex representation starting with '0x'")
-	}
-	return hex.DecodeString(addrRaw[2:])
-}
-
-func processByteArray(strRaw string) ([]byte, error) {
-	if len(strRaw) == 0 {
-		return []byte{}, nil
-	}
-
-	if !(strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X")) {
-		return []byte{}, errors.New("expected hex representation starting with '0x'")
-	}
-	str := strRaw[2:]
-	if len(str)%2 == 1 {
-		str = "0" + str
-	}
-	return hex.DecodeString(str)
-}
-
 func processStringList(obj interface{}) ([]string, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
@@ -579,7 +551,7 @@ func processBigIntList(obj interface{}) ([]*big.Int, bool) {
 	return result, true
 }
 
-func processByteArrayList(obj interface{}) ([][]byte, bool) {
+func parseByteArrayList(obj interface{}) ([][]byte, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
@@ -590,7 +562,7 @@ func processByteArrayList(obj interface{}) ([][]byte, bool) {
 		if !strOk {
 			return nil, false
 		}
-		ba, baErr := processByteArray(str)
+		ba, baErr := parseByteArray(str)
 		if baErr != nil {
 			return nil, false
 		}
@@ -606,76 +578,37 @@ func processArgumentList(obj interface{}) ([]Argument, bool) {
 	}
 	var result []Argument
 	for _, elemRaw := range listRaw.AsList() {
-		strRaw, strOk := parseString(elemRaw)
-		if !strOk {
+		arg, argOk := processArgument(elemRaw)
+		if !argOk {
 			return nil, false
 		}
-
-		// all arguments get converted to 2's complement bytes
-		bi := new(big.Int)
-		var parseOk bool
-		bi, parseOk = bi.SetString(strRaw, 0)
-		if !parseOk {
-			return nil, false
-		}
-
-		forceSign := len(strRaw) > 0 && (strRaw[0] == '-' || strRaw[0] == '+')
-		result = append(result, Argument{
-			value:     bi,
-			forceSign: forceSign,
-		})
+		result = append(result, arg)
 	}
 	return result, true
 }
 
-func parseBigInt(obj oj.OJsonObject) (*big.Int, bool) {
-	str, isStr := obj.(*oj.OJsonString)
-	if !isStr {
-		return nil, false
-	}
-	if len(str.Value) == 0 {
-		return nil, true // interpret "" as nil, so we can restore to empty string instead of 0
+func processArgument(obj oj.OJsonObject) (Argument, bool) {
+	strRaw, strOk := parseString(obj)
+	if !strOk {
+		return Argument{}, false
 	}
 
-	result := new(big.Int)
-	var parseOk bool
-	result, parseOk = result.SetString(str.Value, 0)
+	// try to parse as big int
+	// TODO: figure out how to only use byte representation, there are still some issues with IELE
+	// all arguments get converted to 2's complement bytes
+	bi, parseOk := big.NewInt(0).SetString(strRaw, 0)
 	if !parseOk {
-		return nil, false
+		// try regular byte array parsing
+		argBytes, bytesOk := parseByteArray(strRaw)
+		if bytesOk != nil {
+			return Argument{}, false
+		}
+		bi = big.NewInt(0).SetBytes(argBytes)
 	}
 
-	return result, true
-}
-
-func parseUint64(obj oj.OJsonObject) (uint64, bool) {
-	str, isStr := obj.(*oj.OJsonString)
-	if !isStr {
-		return uint64(0), false
-	}
-	if len(str.Value) == 0 {
-		return uint64(0), true // interpret "" as nil, so we can restore to empty string instead of 0
-	}
-
-	result, err := strconv.ParseUint(str.Value, 0, 64)
-	if err != nil {
-		return uint64(0), false
-	}
-
-	return result, true
-}
-
-func parseString(obj oj.OJsonObject) (string, bool) {
-	str, isStr := obj.(*oj.OJsonString)
-	if !isStr {
-		return "", false
-	}
-	return str.Value, true
-}
-
-func isStar(obj oj.OJsonObject) bool {
-	str, isStr := obj.(*oj.OJsonString)
-	if !isStr {
-		return false
-	}
-	return str.Value == "*"
+	forceSign := len(strRaw) > 0 && (strRaw[0] == '-' || strRaw[0] == '+')
+	return Argument{
+		value:     bi,
+		forceSign: forceSign,
+	}, true
 }
