@@ -132,14 +132,14 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	for _, kvp := range acctMap.OrderedKV {
 
 		if kvp.Key == "nonce" {
-			acct.Nonce, nonceOk = parseBigInt(kvp.Value)
+			acct.Nonce, nonceOk = processBigInt(kvp.Value)
 			if !nonceOk {
 				return nil, errors.New("invalid account nonce")
 			}
 		}
 
 		if kvp.Key == "balance" {
-			acct.Balance, balanceOk = parseBigInt(kvp.Value)
+			acct.Balance, balanceOk = processBigInt(kvp.Value)
 			if !balanceOk {
 				return nil, errors.New("invalid account balance")
 			}
@@ -262,7 +262,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 		}
 
 		if kvp.Key == "status" {
-			blr.Status, statusOk = parseBigInt(kvp.Value)
+			blr.Status, statusOk = processBigInt(kvp.Value)
 			if !statusOk {
 				return nil, errors.New("invalid block result status")
 			}
@@ -309,7 +309,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 			if isStar(kvp.Value) {
 				blr.Refund = nil
 			} else {
-				blr.Refund, refundOk = parseBigInt(kvp.Value)
+				blr.Refund, refundOk = processBigInt(kvp.Value)
 				if !refundOk {
 					return nil, errors.New("invalid block result refund")
 				}
@@ -353,7 +353,7 @@ func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 			}
 			if kvp.Key == "data" {
 				var dataOk bool
-				dataAsInt, dataOk := parseBigInt(kvp.Value)
+				dataAsInt, dataOk := processBigInt(kvp.Value)
 				if !dataOk {
 					return nil, errors.New("cannot parse log entry data")
 				}
@@ -400,7 +400,7 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 		}
 
 		if kvp.Key == "value" {
-			blt.Value, valueOk = parseBigInt(kvp.Value)
+			blt.Value, valueOk = processBigInt(kvp.Value)
 			if !valueOk {
 				return nil, errors.New("invalid block transaction value")
 			}
@@ -481,21 +481,21 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	for _, kvp := range blhMap.OrderedKV {
 
 		if kvp.Key == "gasLimit" {
-			blh.GasLimit, gasLimitOk = parseBigInt(kvp.Value)
+			blh.GasLimit, gasLimitOk = processBigInt(kvp.Value)
 			if !gasLimitOk {
 				return nil, errors.New("invalid block header gasLimit")
 			}
 		}
 
 		if kvp.Key == "number" {
-			blh.Number, numberOk = parseBigInt(kvp.Value)
+			blh.Number, numberOk = processBigInt(kvp.Value)
 			if !numberOk {
 				return nil, errors.New("invalid block header number")
 			}
 		}
 
 		if kvp.Key == "difficulty" {
-			blh.Difficulty, difficultyOk = parseBigInt(kvp.Value)
+			blh.Difficulty, difficultyOk = processBigInt(kvp.Value)
 			if !difficultyOk {
 				return nil, errors.New("invalid block header difficulty")
 			}
@@ -509,7 +509,7 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 		}
 
 		if kvp.Key == "coinbase" {
-			blh.Beneficiary, coinbaseOk = parseBigInt(kvp.Value)
+			blh.Beneficiary, coinbaseOk = processBigInt(kvp.Value)
 			if !coinbaseOk {
 				return nil, errors.New("invalid block header coinbase")
 			}
@@ -517,6 +517,18 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	}
 
 	return &blh, nil
+}
+
+func processBigInt(obj oj.OJsonObject) (*big.Int, bool) {
+	str, isStr := obj.(*oj.OJsonString)
+	if !isStr {
+		return nil, false
+	}
+	if len(str.Value) == 0 {
+		return nil, true // interpret "" as nil, so we can restore to empty string instead of 0
+	}
+
+	return parseBigInt(str.Value)
 }
 
 func processStringList(obj interface{}) ([]string, bool) {
@@ -542,7 +554,7 @@ func processBigIntList(obj interface{}) ([]*big.Int, bool) {
 	}
 	var result []*big.Int
 	for _, elemRaw := range listRaw.AsList() {
-		i, iOk := parseBigInt(elemRaw)
+		i, iOk := processBigInt(elemRaw)
 		if !iOk {
 			return nil, false
 		}
@@ -596,7 +608,7 @@ func processArgument(obj oj.OJsonObject) (Argument, bool) {
 	// try to parse as big int
 	// TODO: figure out how to only use byte representation, there are still some issues with IELE
 	// all arguments get converted to 2's complement bytes
-	bi, parseOk := parseBigInt(obj)
+	bi, parseOk := processBigInt(obj)
 	if !parseOk {
 		return Argument{}, false
 	}

@@ -50,20 +50,27 @@ func parseByteArray(strRaw string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func parseBigInt(obj oj.OJsonObject) (*big.Int, bool) {
-	str, isStr := obj.(*oj.OJsonString)
-	if !isStr {
-		return nil, false
-	}
-	if len(str.Value) == 0 {
-		return nil, true // interpret "" as nil, so we can restore to empty string instead of 0
+func parseBigInt(strRaw string) (*big.Int, bool) {
+	if len(strRaw) == 0 {
+		return big.NewInt(0), true
 	}
 
-	bytes, err := parseByteArray(str.Value)
+	negative := strRaw[0] == '-'
+
+	if strRaw[0] == '-' || strRaw[0] == '+' {
+		strRaw = strRaw[1:]
+	}
+
+	bytes, err := parseByteArray(strRaw)
 	if err != nil {
 		return nil, false
 	}
-	return big.NewInt(0).SetBytes(bytes), true
+	bi := big.NewInt(0).SetBytes(bytes)
+	if negative {
+		bi = bi.Neg(bi)
+	}
+
+	return bi, true
 }
 
 func parseUint64(obj oj.OJsonObject) (uint64, bool) {
@@ -75,7 +82,7 @@ func parseUint64(obj oj.OJsonObject) (uint64, bool) {
 		return uint64(0), true // interpret "" as nil, so we can restore to empty string instead of 0
 	}
 
-	bi, parseOk := parseBigInt(obj)
+	bi, parseOk := processBigInt(obj)
 	if !parseOk {
 		return 0, false
 	}
