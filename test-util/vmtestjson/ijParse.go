@@ -596,14 +596,9 @@ func processArgument(obj oj.OJsonObject) (Argument, bool) {
 	// try to parse as big int
 	// TODO: figure out how to only use byte representation, there are still some issues with IELE
 	// all arguments get converted to 2's complement bytes
-	bi, parseOk := big.NewInt(0).SetString(strRaw, 0)
+	bi, parseOk := parseBigInt(obj)
 	if !parseOk {
-		// try regular byte array parsing
-		argBytes, bytesOk := parseByteArray(strRaw)
-		if bytesOk != nil {
-			return Argument{}, false
-		}
-		bi = big.NewInt(0).SetBytes(argBytes)
+		return Argument{}, false
 	}
 
 	forceSign := len(strRaw) > 0 && (strRaw[0] == '-' || strRaw[0] == '+')
