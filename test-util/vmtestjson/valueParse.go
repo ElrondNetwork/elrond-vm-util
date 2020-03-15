@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
@@ -40,6 +39,7 @@ func parseByteArray(strRaw string) ([]byte, error) {
 
 	// default: parse as BigInt, base 10
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
+	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
 	result := new(big.Int)
 	var parseOk bool
 	result, parseOk = result.SetString(str, 10)
@@ -75,12 +75,16 @@ func parseUint64(obj oj.OJsonObject) (uint64, bool) {
 		return uint64(0), true // interpret "" as nil, so we can restore to empty string instead of 0
 	}
 
-	result, err := strconv.ParseUint(str.Value, 0, 64)
-	if err != nil {
-		return uint64(0), false
+	bi, parseOk := parseBigInt(obj)
+	if !parseOk {
+		return 0, false
 	}
 
-	return result, true
+	if !bi.IsUint64() {
+		return 0, false
+	}
+
+	return bi.Uint64(), true
 }
 
 func parseString(obj oj.OJsonObject) (string, bool) {
