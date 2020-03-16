@@ -22,6 +22,14 @@ func parseByteArray(strRaw string) ([]byte, error) {
 		return []byte{}, nil
 	}
 
+	if strRaw == "false" {
+		return []byte{0x00}, nil
+	}
+
+	if strRaw == "true" {
+		return []byte{0x01}, nil
+	}
+
 	// hex, the usual representation
 	if strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X") {
 		str := strRaw[2:]
