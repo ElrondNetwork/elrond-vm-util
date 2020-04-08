@@ -3,6 +3,8 @@ package callbackblockchain
 import (
 	"errors"
 	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var zero = big.NewInt(0)
@@ -148,4 +150,9 @@ func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
 // CurrentEpoch returns the current epoch
 func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 	return 0
+}
+
+// ProcessBuiltInFunction -
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	return big.NewInt(0), 0, nil
 }
