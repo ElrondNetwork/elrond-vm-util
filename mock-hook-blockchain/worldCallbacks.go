@@ -156,3 +156,8 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
 	return big.NewInt(0), 0, nil
 }
+
+// GetBuiltinFunctionNames -
+func GetBuiltinFunctionNames() vmcommon.FunctionNames {
+	return make(vmcommon.FunctionNames)
+}
