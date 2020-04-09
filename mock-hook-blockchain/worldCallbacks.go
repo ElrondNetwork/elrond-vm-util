@@ -158,6 +158,6 @@ func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCall
 }
 
 // GetBuiltinFunctionNames -
-func GetBuiltinFunctionNames() vmcommon.FunctionNames {
+func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
