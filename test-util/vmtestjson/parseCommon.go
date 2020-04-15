@@ -231,6 +231,20 @@ func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 					return nil, err
 				}
 			}
+			if kvp.Key == "identifier" {
+				strVal, valStrOk := parseString(kvp.Value)
+				if !valStrOk {
+					return nil, errors.New("invalid log identifier")
+				}
+				var identifierErr error
+				logEntry.Identifier, identifierErr = parseAnyValueAsByteArray(strVal)
+				if identifierErr != nil {
+					return nil, errors.New("invalid log identifier")
+				}
+				if len(logEntry.Identifier) != 32 {
+					return nil, errors.New("invalid log identifier - should be 32 bytes in length")
+				}
+			}
 			if kvp.Key == "topics" {
 				var topicsOk bool
 				logEntry.Topics, topicsOk = parseByteArrayList(kvp.Value)

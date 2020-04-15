@@ -37,9 +37,10 @@ type TransactionResult struct {
 
 // LogEntry is a json object representing an expected transaction result log entry.
 type LogEntry struct {
-	Address []byte
-	Topics  [][]byte
-	Data    []byte
+	Address    []byte
+	Identifier []byte
+	Topics     [][]byte
+	Data       []byte
 }
 
 // FindAccount searches an account list by address.

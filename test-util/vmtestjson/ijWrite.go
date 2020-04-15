@@ -158,6 +158,7 @@ func LogToString(logEntry *LogEntry) string {
 func logToOJ(logEntry *LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
 	logOJ.Put("address", accountAddressToOJ(logEntry.Address))
+	logOJ.Put("identifier", stringToOJ(byteArrayToString(logEntry.Identifier)))
 
 	var topicsList []oj.OJsonObject
 	for _, topic := range logEntry.Topics {
