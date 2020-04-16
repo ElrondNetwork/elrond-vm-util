@@ -6,8 +6,8 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-// ParseTopLevel converts json string to object representation
-func ParseTopLevel(jsonString []byte) ([]*Test, error) {
+// ParseTestFile converts json string to object representation
+func ParseTestFile(jsonString []byte) ([]*Test, error) {
 
 	jobj, err := oj.ParseOrderedJSON(jsonString)
 	if err != nil {
@@ -48,21 +48,10 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 		}
 
 		if kvp.Key == "pre" {
-			preMap, isPreMap := kvp.Value.(*oj.OJsonMap)
-			if !isPreMap {
-				return nil, errors.New("unmarshalled pre object is not a map")
-			}
-			for _, acctKVP := range preMap.OrderedKV {
-				acct, acctErr := processAccount(acctKVP.Value)
-				if acctErr != nil {
-					return nil, acctErr
-				}
-				acctAddr, hexErr := parseAccountAddress(acctKVP.Key)
-				if hexErr != nil {
-					return nil, hexErr
-				}
-				acct.Address = acctAddr
-				test.Pre = append(test.Pre, acct)
+			var err error
+			test.Pre, err = processAccountMap(kvp.Value)
+			if err != nil {
+				return nil, err
 			}
 		}
 
@@ -97,21 +86,10 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 		}
 
 		if kvp.Key == "postState" {
-			postMap, isPostMap := kvp.Value.(*oj.OJsonMap)
-			if !isPostMap {
-				return nil, errors.New("unmarshalled postState object is not a map")
-			}
-			for _, acctKVP := range postMap.OrderedKV {
-				acct, acctErr := processAccount(acctKVP.Value)
-				if acctErr != nil {
-					return nil, acctErr
-				}
-				acctAddr, hexErr := parseAccountAddress(acctKVP.Key)
-				if hexErr != nil {
-					return nil, hexErr
-				}
-				acct.Address = acctAddr
-				test.PostState = append(test.PostState, acct)
+			var err error
+			test.PostState, err = processAccountMap(kvp.Value)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}

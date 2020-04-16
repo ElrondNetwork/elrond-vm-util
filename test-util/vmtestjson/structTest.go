@@ -28,18 +28,3 @@ type BlockHeader struct {
 	GasLimit    *big.Int
 	Timestamp   uint64
 }
-
-// Transaction is a json object representing a transaction.
-type Transaction struct {
-	Nonce         uint64
-	Value         *big.Int
-	IsCreate      bool
-	From          []byte
-	To            []byte
-	Function      string
-	ContractCode  string
-	AssembledCode string
-	Arguments     [][]byte
-	GasPrice      uint64
-	GasLimit      uint64
-}

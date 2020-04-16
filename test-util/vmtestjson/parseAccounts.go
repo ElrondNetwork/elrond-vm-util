@@ -6,6 +6,17 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
+func parseAccountAddress(addrRaw string) ([]byte, error) {
+	if len(addrRaw) == 0 {
+		return []byte{}, errors.New("missing account address")
+	}
+	addrBytes, err := parseAnyValueAsByteArray(addrRaw)
+	if err == nil && len(addrBytes) != 32 {
+		return []byte{}, errors.New("account addressis not 32 bytes in length")
+	}
+	return addrBytes, err
+}
+
 func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	acctMap, isMap := acctRaw.(*oj.OJsonMap)
 	if !isMap {
@@ -74,4 +85,27 @@ func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	}
 
 	return &acct, nil
+}
+
+func processAccountMap(acctMapRaw oj.OJsonObject) ([]*Account, error) {
+	var accounts []*Account
+	preMap, isPreMap := acctMapRaw.(*oj.OJsonMap)
+	if !isPreMap {
+		return nil, errors.New("unmarshalled account map object is not a map")
+	}
+	for _, acctKVP := range preMap.OrderedKV {
+		if acctKVP.Key != "step" {
+			acct, acctErr := processAccount(acctKVP.Value)
+			if acctErr != nil {
+				return nil, acctErr
+			}
+			acctAddr, hexErr := parseAccountAddress(acctKVP.Key)
+			if hexErr != nil {
+				return nil, hexErr
+			}
+			acct.Address = acctAddr
+			accounts = append(accounts, acct)
+		}
+	}
+	return accounts, nil
 }

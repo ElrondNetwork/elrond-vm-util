@@ -1,18 +1,10 @@
 package vmtestjson
 
 import (
-	"errors"
 	"math/big"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
-
-func parseAccountAddress(addrRaw string) ([]byte, error) {
-	if len(addrRaw) == 0 {
-		return []byte{}, errors.New("missing account address")
-	}
-	return parseAnyValueAsByteArray(addrRaw)
-}
 
 func parseBigInt(strRaw string) (*big.Int, bool) {
 	if len(strRaw) == 0 {

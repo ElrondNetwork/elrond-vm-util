@@ -32,7 +32,7 @@ func RunSingleJSONTest(testFilePath string, testExecutor VMTestExecutor) error {
 		return err
 	}
 
-	top, parseErr := ij.ParseTopLevel(byteValue)
+	top, parseErr := ij.ParseTestFile(byteValue)
 	if parseErr != nil {
 		return parseErr
 	}
