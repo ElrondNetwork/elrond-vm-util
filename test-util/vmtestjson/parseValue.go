@@ -6,7 +6,7 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func parseBigInt(strRaw string) (*big.Int, bool) {
+func (p *Parser) parseBigInt(strRaw string) (*big.Int, bool) {
 	if len(strRaw) == 0 {
 		return big.NewInt(0), true
 	}
@@ -17,7 +17,7 @@ func parseBigInt(strRaw string) (*big.Int, bool) {
 		strRaw = strRaw[1:]
 	}
 
-	bytes, err := parseAnyValueAsByteArray(strRaw)
+	bytes, err := p.parseAnyValueAsByteArray(strRaw)
 	if err != nil {
 		return nil, false
 	}
@@ -29,7 +29,7 @@ func parseBigInt(strRaw string) (*big.Int, bool) {
 	return bi, true
 }
 
-func parseUint64(obj oj.OJsonObject) (uint64, bool) {
+func (p *Parser) parseUint64(obj oj.OJsonObject) (uint64, bool) {
 	str, isStr := obj.(*oj.OJsonString)
 	if !isStr {
 		return uint64(0), false
@@ -38,7 +38,7 @@ func parseUint64(obj oj.OJsonObject) (uint64, bool) {
 		return uint64(0), true // interpret "" as nil, so we can restore to empty string instead of 0
 	}
 
-	bi, parseOk := processBigInt(obj)
+	bi, parseOk := p.processBigInt(obj)
 	if !parseOk {
 		return 0, false
 	}
@@ -50,7 +50,7 @@ func parseUint64(obj oj.OJsonObject) (uint64, bool) {
 	return bi.Uint64(), true
 }
 
-func parseString(obj oj.OJsonObject) (string, bool) {
+func (p *Parser) parseString(obj oj.OJsonObject) (string, bool) {
 	str, isStr := obj.(*oj.OJsonString)
 	if !isStr {
 		return "", false

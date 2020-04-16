@@ -6,7 +6,7 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
+func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 	logList, isList := logsRaw.(*oj.OJsonList)
 	if !isList {
 		return nil, errors.New("unmarshalled logs list is not a list")
@@ -20,23 +20,23 @@ func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 		logEntry := LogEntry{}
 		for _, kvp := range logMap.OrderedKV {
 			if kvp.Key == "address" {
-				accountStr, strOk := parseString(kvp.Value)
+				accountStr, strOk := p.parseString(kvp.Value)
 				if !strOk {
 					return nil, errors.New("unmarshalled log entry address is not a json string")
 				}
 				var err error
-				logEntry.Address, err = parseAccountAddress(accountStr)
+				logEntry.Address, err = p.parseAccountAddress(accountStr)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if kvp.Key == "identifier" {
-				strVal, valStrOk := parseString(kvp.Value)
+				strVal, valStrOk := p.parseString(kvp.Value)
 				if !valStrOk {
 					return nil, errors.New("invalid log identifier")
 				}
 				var identifierErr error
-				logEntry.Identifier, identifierErr = parseAnyValueAsByteArray(strVal)
+				logEntry.Identifier, identifierErr = p.parseAnyValueAsByteArray(strVal)
 				if identifierErr != nil {
 					return nil, errors.New("invalid log identifier")
 				}
@@ -46,14 +46,14 @@ func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 			}
 			if kvp.Key == "topics" {
 				var topicsOk bool
-				logEntry.Topics, topicsOk = parseByteArrayList(kvp.Value)
+				logEntry.Topics, topicsOk = p.parseByteArrayList(kvp.Value)
 				if !topicsOk {
 					return nil, errors.New("unmarshalled log entry topics is not big int list")
 				}
 			}
 			if kvp.Key == "data" {
 				var dataOk bool
-				dataAsInt, dataOk := processBigInt(kvp.Value)
+				dataAsInt, dataOk := p.processBigInt(kvp.Value)
 				if !dataOk {
 					return nil, errors.New("cannot parse log entry data")
 				}

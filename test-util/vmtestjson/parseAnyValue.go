@@ -9,7 +9,7 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
-func parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
+func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	if len(strRaw) == 0 {
 		return []byte{}, nil
 	}
@@ -30,7 +30,7 @@ func parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 
 	// signed numbers
 	if strRaw[0] == '-' || strRaw[0] == '+' {
-		numberBytes, err := parseUnsignedNumberAsByteArray(strRaw[1:])
+		numberBytes, err := p.parseUnsignedNumberAsByteArray(strRaw[1:])
 		if err != nil {
 			return []byte{}, err
 		}
@@ -42,10 +42,10 @@ func parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	}
 
 	// unsigned numbers
-	return parseUnsignedNumberAsByteArray(strRaw)
+	return p.parseUnsignedNumberAsByteArray(strRaw)
 }
 
-func parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
+func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
 	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
 

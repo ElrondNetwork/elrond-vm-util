@@ -6,7 +6,7 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
+func (p *Parser) processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 	bltMap, isMap := blrRaw.(*oj.OJsonMap)
 	if !isMap {
 		return nil, errors.New("unmarshalled block transaction is not a map")
@@ -19,23 +19,23 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 
 		switch kvp.Key {
 		case "nonce":
-			blt.Nonce, nonceOk = parseUint64(kvp.Value)
+			blt.Nonce, nonceOk = p.parseUint64(kvp.Value)
 			if !nonceOk {
 				return nil, errors.New("invalid block transaction nonce")
 			}
 		case "from":
-			fromStr, fromOk := parseString(kvp.Value)
+			fromStr, fromOk := p.parseString(kvp.Value)
 			if !fromOk {
 				return nil, errors.New("invalid block transaction from")
 			}
 			var fromErr error
-			blt.From, fromErr = parseAccountAddress(fromStr)
+			blt.From, fromErr = p.parseAccountAddress(fromStr)
 			if fromErr != nil {
 				return nil, fromErr
 			}
 
 		case "to":
-			toStr, toOk := parseString(kvp.Value)
+			toStr, toOk := p.parseString(kvp.Value)
 			if !toOk {
 				return nil, errors.New("invalid block transaction to")
 			}
@@ -45,38 +45,38 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 
 			if !blt.IsCreate {
 				var toErr error
-				blt.To, toErr = parseAccountAddress(toStr)
+				blt.To, toErr = p.parseAccountAddress(toStr)
 				if toErr != nil {
 					return nil, toErr
 				}
 			}
 		case "function":
-			blt.Function, functionOk = parseString(kvp.Value)
+			blt.Function, functionOk = p.parseString(kvp.Value)
 			if !functionOk {
 				return nil, errors.New("invalid block transaction function")
 			}
 		case "value":
-			blt.Value, valueOk = processBigInt(kvp.Value)
+			blt.Value, valueOk = p.processBigInt(kvp.Value)
 			if !valueOk {
 				return nil, errors.New("invalid block transaction value")
 			}
 		case "arguments":
-			blt.Arguments, argumentsOk = processArgumentList(kvp.Value)
+			blt.Arguments, argumentsOk = p.processArgumentList(kvp.Value)
 			if !argumentsOk {
 				return nil, errors.New("invalid block transaction arguments")
 			}
 		case "contractCode":
-			blt.ContractCode, contractCodeOk = parseString(kvp.Value)
+			blt.ContractCode, contractCodeOk = p.parseString(kvp.Value)
 			if !contractCodeOk {
 				return nil, errors.New("invalid block transaction contract code")
 			}
 		case "gasPrice":
-			blt.GasPrice, gasPriceOk = parseUint64(kvp.Value)
+			blt.GasPrice, gasPriceOk = p.parseUint64(kvp.Value)
 			if !gasPriceOk {
 				return nil, errors.New("invalid block transaction gasPrice")
 			}
 		case "gasLimit":
-			blt.GasLimit, gasLimitOk = parseUint64(kvp.Value)
+			blt.GasLimit, gasLimitOk = p.parseUint64(kvp.Value)
 			if !gasLimitOk {
 				return nil, errors.New("invalid block transaction gasLimit")
 			}
@@ -88,18 +88,18 @@ func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
 	return &blt, nil
 }
 
-func processArgumentList(obj interface{}) ([][]byte, bool) {
+func (p *Parser) processArgumentList(obj interface{}) ([][]byte, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
 	}
 	var result [][]byte
 	for _, elemRaw := range listRaw.AsList() {
-		strRaw, strOk := parseString(elemRaw)
+		strRaw, strOk := p.parseString(elemRaw)
 		if !strOk {
 			return nil, false
 		}
-		arg, argErr := parseAnyValueAsByteArray(strRaw)
+		arg, argErr := p.parseAnyValueAsByteArray(strRaw)
 		if argErr != nil {
 			return nil, false
 		}

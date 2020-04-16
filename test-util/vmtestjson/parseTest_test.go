@@ -26,7 +26,8 @@ func TestParseTest(t *testing.T) {
 		return
 	}
 
-	_, parseErr := ParseTestFile(byteValue)
+	p := Parser{}
+	_, parseErr := p.ParseTestFile(byteValue)
 	if parseErr != nil {
 		t.Error(parseErr)
 		return

@@ -7,7 +7,7 @@ import (
 )
 
 // ParseTestFile converts json string to object representation
-func ParseTestFile(jsonString []byte) ([]*Test, error) {
+func (p *Parser) ParseTestFile(jsonString []byte) ([]*Test, error) {
 
 	jobj, err := oj.ParseOrderedJSON(jsonString)
 	if err != nil {
@@ -21,7 +21,7 @@ func ParseTestFile(jsonString []byte) ([]*Test, error) {
 
 	var top []*Test
 	for _, kvp := range topMap.OrderedKV {
-		t, tErr := processTest(kvp.Value)
+		t, tErr := p.processTest(kvp.Value)
 		if tErr != nil {
 			return nil, tErr
 		}
@@ -31,7 +31,7 @@ func ParseTestFile(jsonString []byte) ([]*Test, error) {
 	return top, nil
 }
 
-func processTest(testObj oj.OJsonObject) (*Test, error) {
+func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 	testMap, isTestMap := testObj.(*oj.OJsonMap)
 	if !isTestMap {
 		return nil, errors.New("unmarshalled test object is not a map")
@@ -49,7 +49,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 
 		if kvp.Key == "pre" {
 			var err error
-			test.Pre, err = processAccountMap(kvp.Value)
+			test.Pre, err = p.processAccountMap(kvp.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -61,7 +61,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 				return nil, errors.New("unmarshalled blocks object is not a list")
 			}
 			for _, blRaw := range blocksRaw.AsList() {
-				bl, blErr := processBlock(blRaw)
+				bl, blErr := p.processBlock(blRaw)
 				if blErr != nil {
 					return nil, blErr
 				}
@@ -71,7 +71,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 
 		if kvp.Key == "network" {
 			var networkOk bool
-			test.Network, networkOk = parseString(kvp.Value)
+			test.Network, networkOk = p.parseString(kvp.Value)
 			if !networkOk {
 				return nil, errors.New("test network value not a string")
 			}
@@ -79,7 +79,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 
 		if kvp.Key == "blockhashes" {
 			var bhsOk bool
-			test.BlockHashes, bhsOk = parseByteArrayList(kvp.Value)
+			test.BlockHashes, bhsOk = p.parseByteArrayList(kvp.Value)
 			if !bhsOk {
 				return nil, errors.New("unmarshalled blockHashes object is not a list")
 			}
@@ -87,7 +87,7 @@ func processTest(testObj oj.OJsonObject) (*Test, error) {
 
 		if kvp.Key == "postState" {
 			var err error
-			test.PostState, err = processAccountMap(kvp.Value)
+			test.PostState, err = p.processAccountMap(kvp.Value)
 			if err != nil {
 				return nil, err
 			}

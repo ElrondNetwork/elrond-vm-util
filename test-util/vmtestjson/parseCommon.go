@@ -7,7 +7,7 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func processBlock(blockRaw oj.OJsonObject) (*Block, error) {
+func (p *Parser) processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 	blockMap, isMap := blockRaw.(*oj.OJsonMap)
 	if !isMap {
 		return nil, errors.New("unmarshalled block object is not a map")
@@ -22,7 +22,7 @@ func processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 				return nil, errors.New("unmarshalled block results object is not a list")
 			}
 			for _, resRaw := range resultsRaw.AsList() {
-				blr, blrErr := processBlockResult(resRaw)
+				blr, blrErr := p.processBlockResult(resRaw)
 				if blrErr != nil {
 					return nil, blrErr
 				}
@@ -36,7 +36,7 @@ func processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 				return nil, errors.New("unmarshalled block transactions object is not a list")
 			}
 			for _, trRaw := range transactionsRaw.AsList() {
-				tr, trErr := processBlockTransaction(trRaw)
+				tr, trErr := p.processBlockTransaction(trRaw)
 				if trErr != nil {
 					return nil, trErr
 				}
@@ -45,7 +45,7 @@ func processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 		}
 
 		if kvp.Key == "blockHeader" {
-			blh, blhErr := processBlockHeader(kvp.Value)
+			blh, blhErr := p.processBlockHeader(kvp.Value)
 			if blhErr != nil {
 				return nil, blhErr
 			}
@@ -60,7 +60,7 @@ func processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 	return &bl, nil
 }
 
-func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
+func (p *Parser) processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	blrMap, isMap := blrRaw.(*oj.OJsonMap)
 	if !isMap {
 		return nil, errors.New("unmarshalled block result is not a map")
@@ -72,21 +72,21 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	for _, kvp := range blrMap.OrderedKV {
 
 		if kvp.Key == "out" {
-			blr.Out, outOk = parseByteArrayList(kvp.Value)
+			blr.Out, outOk = p.parseByteArrayList(kvp.Value)
 			if !outOk {
 				return nil, errors.New("invalid block result out")
 			}
 		}
 
 		if kvp.Key == "status" {
-			blr.Status, statusOk = processBigInt(kvp.Value)
+			blr.Status, statusOk = p.processBigInt(kvp.Value)
 			if !statusOk {
 				return nil, errors.New("invalid block result status")
 			}
 		}
 
 		if kvp.Key == "message" {
-			blr.Message, messageOk = parseString(kvp.Value)
+			blr.Message, messageOk = p.parseString(kvp.Value)
 			if !messageOk {
 				return nil, errors.New("invalid block result message")
 			}
@@ -98,7 +98,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 				blr.Gas = 0
 			} else {
 				blr.CheckGas = true
-				blr.Gas, gasOk = parseUint64(kvp.Value)
+				blr.Gas, gasOk = p.parseUint64(kvp.Value)
 				if !gasOk {
 					return nil, errors.New("invalid block result gas")
 				}
@@ -111,10 +111,10 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 			} else {
 				blr.IgnoreLogs = false
 				var logHashOk bool
-				blr.LogHash, logHashOk = parseString(kvp.Value)
+				blr.LogHash, logHashOk = p.parseString(kvp.Value)
 				if !logHashOk {
 					var logListErr error
-					blr.Logs, logListErr = processLogList(kvp.Value)
+					blr.Logs, logListErr = p.processLogList(kvp.Value)
 					if logListErr != nil {
 						return nil, logListErr
 					}
@@ -126,7 +126,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 			if isStar(kvp.Value) {
 				blr.Refund = nil
 			} else {
-				blr.Refund, refundOk = processBigInt(kvp.Value)
+				blr.Refund, refundOk = p.processBigInt(kvp.Value)
 				if !refundOk {
 					return nil, errors.New("invalid block result refund")
 				}
@@ -137,7 +137,7 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	return &blr, nil
 }
 
-func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
+func (p *Parser) processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	blhMap, isMap := blhRaw.(*oj.OJsonMap)
 	if !isMap {
 		return nil, errors.New("unmarshalled block header is not a map")
@@ -149,35 +149,35 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	for _, kvp := range blhMap.OrderedKV {
 
 		if kvp.Key == "gasLimit" {
-			blh.GasLimit, gasLimitOk = processBigInt(kvp.Value)
+			blh.GasLimit, gasLimitOk = p.processBigInt(kvp.Value)
 			if !gasLimitOk {
 				return nil, errors.New("invalid block header gasLimit")
 			}
 		}
 
 		if kvp.Key == "number" {
-			blh.Number, numberOk = processBigInt(kvp.Value)
+			blh.Number, numberOk = p.processBigInt(kvp.Value)
 			if !numberOk {
 				return nil, errors.New("invalid block header number")
 			}
 		}
 
 		if kvp.Key == "difficulty" {
-			blh.Difficulty, difficultyOk = processBigInt(kvp.Value)
+			blh.Difficulty, difficultyOk = p.processBigInt(kvp.Value)
 			if !difficultyOk {
 				return nil, errors.New("invalid block header difficulty")
 			}
 		}
 
 		if kvp.Key == "timestamp" {
-			blh.Timestamp, timestampOk = parseUint64(kvp.Value)
+			blh.Timestamp, timestampOk = p.parseUint64(kvp.Value)
 			if !timestampOk {
 				return nil, errors.New("invalid block header timestamp")
 			}
 		}
 
 		if kvp.Key == "coinbase" {
-			blh.Beneficiary, coinbaseOk = processBigInt(kvp.Value)
+			blh.Beneficiary, coinbaseOk = p.processBigInt(kvp.Value)
 			if !coinbaseOk {
 				return nil, errors.New("invalid block header coinbase")
 			}
@@ -187,7 +187,7 @@ func processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	return &blh, nil
 }
 
-func processBigInt(obj oj.OJsonObject) (*big.Int, bool) {
+func (p *Parser) processBigInt(obj oj.OJsonObject) (*big.Int, bool) {
 	str, isStr := obj.(*oj.OJsonString)
 	if !isStr {
 		return nil, false
@@ -196,10 +196,10 @@ func processBigInt(obj oj.OJsonObject) (*big.Int, bool) {
 		return nil, true // interpret "" as nil, so we can restore to empty string instead of 0
 	}
 
-	return parseBigInt(str.Value)
+	return p.parseBigInt(str.Value)
 }
 
-func processStringList(obj interface{}) ([]string, bool) {
+func (p *Parser) processStringList(obj interface{}) ([]string, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
@@ -215,14 +215,14 @@ func processStringList(obj interface{}) ([]string, bool) {
 	return result, true
 }
 
-func processBigIntList(obj interface{}) ([]*big.Int, bool) {
+func (p *Parser) processBigIntList(obj interface{}) ([]*big.Int, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
 	}
 	var result []*big.Int
 	for _, elemRaw := range listRaw.AsList() {
-		i, iOk := processBigInt(elemRaw)
+		i, iOk := p.processBigInt(elemRaw)
 		if !iOk {
 			return nil, false
 		}
@@ -231,18 +231,18 @@ func processBigIntList(obj interface{}) ([]*big.Int, bool) {
 	return result, true
 }
 
-func parseByteArrayList(obj interface{}) ([][]byte, bool) {
+func (p *Parser) parseByteArrayList(obj interface{}) ([][]byte, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
 	}
 	var result [][]byte
 	for _, elemRaw := range listRaw.AsList() {
-		str, strOk := parseString(elemRaw)
+		str, strOk := p.parseString(elemRaw)
 		if !strOk {
 			return nil, false
 		}
-		ba, baErr := parseAnyValueAsByteArray(str)
+		ba, baErr := p.parseAnyValueAsByteArray(str)
 		if baErr != nil {
 			return nil, false
 		}
