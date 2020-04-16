@@ -7,76 +7,6 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func processAccount(acctRaw oj.OJsonObject) (*Account, error) {
-	acctMap, isMap := acctRaw.(*oj.OJsonMap)
-	if !isMap {
-		return nil, errors.New("unmarshalled account object is not a map")
-	}
-
-	acct := Account{}
-	var nonceOk, balanceOk, codeOk, dataOk bool
-
-	for _, kvp := range acctMap.OrderedKV {
-
-		if kvp.Key == "nonce" {
-			acct.Nonce, nonceOk = processBigInt(kvp.Value)
-			if !nonceOk {
-				return nil, errors.New("invalid account nonce")
-			}
-		}
-
-		if kvp.Key == "balance" {
-			acct.Balance, balanceOk = processBigInt(kvp.Value)
-			if !balanceOk {
-				return nil, errors.New("invalid account balance")
-			}
-		}
-
-		if kvp.Key == "storage" {
-			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
-			if !storageOk {
-				return nil, errors.New("invalid account storage")
-			}
-			for _, storageKvp := range storageMap.OrderedKV {
-				byteKey, keyOk := parseAnyValueAsByteArray(storageKvp.Key)
-				if keyOk != nil {
-					return nil, errors.New("invalid account storage key")
-				}
-				strVal, valStrOk := parseString(storageKvp.Value)
-				if !valStrOk {
-					return nil, errors.New("invalid account storage value")
-				}
-				byteVal, valOk := parseAnyValueAsByteArray(strVal)
-				if valOk != nil {
-					return nil, errors.New("invalid account storage value")
-				}
-				stElem := StorageKeyValuePair{
-					Key:   byteKey,
-					Value: byteVal,
-				}
-				acct.Storage = append(acct.Storage, &stElem)
-			}
-		}
-
-		if kvp.Key == "code" {
-			acct.Code, codeOk = parseString(kvp.Value)
-			if !codeOk {
-				return nil, errors.New("invalid account code")
-			}
-			acct.OriginalCode = acct.Code
-		}
-
-		if kvp.Key == "asyncCallData" {
-			acct.AsyncCallData, dataOk = parseString(kvp.Value)
-			if !dataOk {
-				return nil, errors.New("invalid asyncCallData string")
-			}
-		}
-	}
-
-	return &acct, nil
-}
-
 func processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 	blockMap, isMap := blockRaw.(*oj.OJsonMap)
 	if !isMap {
@@ -205,67 +135,6 @@ func processBlockResult(blrRaw oj.OJsonObject) (*TransactionResult, error) {
 	}
 
 	return &blr, nil
-}
-
-func processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
-	logList, isList := logsRaw.(*oj.OJsonList)
-	if !isList {
-		return nil, errors.New("unmarshalled logs list is not a list")
-	}
-	var logEntries []*LogEntry
-	for _, logRaw := range logList.AsList() {
-		logMap, isMap := logRaw.(*oj.OJsonMap)
-		if !isMap {
-			return nil, errors.New("unmarshalled log entry is not a map")
-		}
-		logEntry := LogEntry{}
-		for _, kvp := range logMap.OrderedKV {
-			if kvp.Key == "address" {
-				accountStr, strOk := parseString(kvp.Value)
-				if !strOk {
-					return nil, errors.New("unmarshalled log entry address is not a json string")
-				}
-				var err error
-				logEntry.Address, err = parseAccountAddress(accountStr)
-				if err != nil {
-					return nil, err
-				}
-			}
-			if kvp.Key == "identifier" {
-				strVal, valStrOk := parseString(kvp.Value)
-				if !valStrOk {
-					return nil, errors.New("invalid log identifier")
-				}
-				var identifierErr error
-				logEntry.Identifier, identifierErr = parseAnyValueAsByteArray(strVal)
-				if identifierErr != nil {
-					return nil, errors.New("invalid log identifier")
-				}
-				if len(logEntry.Identifier) != 32 {
-					return nil, errors.New("invalid log identifier - should be 32 bytes in length")
-				}
-			}
-			if kvp.Key == "topics" {
-				var topicsOk bool
-				logEntry.Topics, topicsOk = parseByteArrayList(kvp.Value)
-				if !topicsOk {
-					return nil, errors.New("unmarshalled log entry topics is not big int list")
-				}
-			}
-			if kvp.Key == "data" {
-				var dataOk bool
-				dataAsInt, dataOk := processBigInt(kvp.Value)
-				if !dataOk {
-					return nil, errors.New("cannot parse log entry data")
-				}
-				logEntry.Data = dataAsInt.Bytes()
-
-			}
-		}
-		logEntries = append(logEntries, &logEntry)
-	}
-
-	return logEntries, nil
 }
 
 func processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
@@ -484,39 +353,22 @@ func parseByteArrayList(obj interface{}) ([][]byte, bool) {
 	return result, true
 }
 
-func processArgumentList(obj interface{}) ([]Argument, bool) {
+func processArgumentList(obj interface{}) ([][]byte, bool) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, false
 	}
-	var result []Argument
+	var result [][]byte
 	for _, elemRaw := range listRaw.AsList() {
-		arg, argOk := processArgument(elemRaw)
-		if !argOk {
+		strRaw, strOk := parseString(elemRaw)
+		if !strOk {
+			return nil, false
+		}
+		arg, argErr := parseAnyValueAsByteArray(strRaw)
+		if argErr != nil {
 			return nil, false
 		}
 		result = append(result, arg)
 	}
 	return result, true
-}
-
-func processArgument(obj oj.OJsonObject) (Argument, bool) {
-	strRaw, strOk := parseString(obj)
-	if !strOk {
-		return Argument{}, false
-	}
-
-	// try to parse as big int
-	// TODO: figure out how to only use byte representation, there are still some issues with IELE
-	// all arguments get converted to 2's complement bytes
-	bi, parseOk := processBigInt(obj)
-	if !parseOk {
-		return Argument{}, false
-	}
-
-	forceSign := len(strRaw) > 0 && (strRaw[0] == '-' || strRaw[0] == '+')
-	return Argument{
-		value:     bi,
-		forceSign: forceSign,
-	}, true
 }

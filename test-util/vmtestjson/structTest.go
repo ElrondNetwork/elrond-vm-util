@@ -29,14 +29,6 @@ type BlockHeader struct {
 	Timestamp   uint64
 }
 
-// Argument encodes an argument in a transaction.
-// Can distinguish values written explicitly as poitive or negative (e.g. -0x01, +0xFF),
-// in order to provide some additional context on how to interpret them in an actual test.
-type Argument struct {
-	value     *big.Int
-	forceSign bool
-}
-
 // Transaction is a json object representing a transaction.
 type Transaction struct {
 	Nonce         uint64
@@ -47,7 +39,7 @@ type Transaction struct {
 	Function      string
 	ContractCode  string
 	AssembledCode string
-	Arguments     []Argument
+	Arguments     [][]byte
 	GasPrice      uint64
 	GasLimit      uint64
 }
