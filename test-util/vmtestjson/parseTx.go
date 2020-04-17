@@ -7,7 +7,7 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func (p *Parser) processBlockTransaction(blrRaw oj.OJsonObject) (*Transaction, error) {
+func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
 	bltMap, isMap := blrRaw.(*oj.OJsonMap)
 	if !isMap {
 		return nil, errors.New("unmarshalled block transaction is not a map")

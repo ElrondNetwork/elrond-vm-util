@@ -2,15 +2,19 @@ package vmtestjson
 
 // Scenario is a json object representing a test scenario with steps.
 type Scenario struct {
-	Steps []Step
+	Name     string
+	Comment  string
+	CheckGas bool
+	Steps    []Step
 }
 
 type Step interface {
 	StepTypeName() string
 }
 
-type InitStateStep struct {
-	InitAccounts []*Account
+type SetStateStep struct {
+	Accounts    []*Account
+	BlockHashes [][]byte
 }
 
 type CheckStateStep struct {
@@ -18,22 +22,28 @@ type CheckStateStep struct {
 }
 
 type TxStep struct {
-	Tx       *Transaction
-	Expected *TransactionResult
+	Tx             *Transaction
+	ExpectedResult *TransactionResult
 }
 
-var _ Step = (*InitStateStep)(nil)
+var _ Step = (*SetStateStep)(nil)
 var _ Step = (*CheckStateStep)(nil)
 var _ Step = (*TxStep)(nil)
 
-func (*InitStateStep) StepTypeName() string {
-	return "initState"
+const stepNameSetState = "setState"
+
+func (*SetStateStep) StepTypeName() string {
+	return stepNameSetState
 }
+
+const stepNameCheckState = "checkState"
 
 func (*CheckStateStep) StepTypeName() string {
-	return "checkState"
+	return stepNameCheckState
 }
 
+const stepNameTx = "tx"
+
 func (*TxStep) StepTypeName() string {
-	return "tx"
+	return stepNameTx
 }
