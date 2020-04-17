@@ -28,7 +28,7 @@ func TestParseTest(t *testing.T) {
 
 	p := Parser{
 		FileResolver: NewDefaultFileResolver().ReplacePath(
-			"erc20.wasm",
+			"smart-contract.wasm",
 			"exampleFile.txt"),
 	}
 	_, parseErr := p.ParseTestFile(byteValue)
