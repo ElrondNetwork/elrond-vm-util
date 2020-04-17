@@ -53,6 +53,9 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage key: %w", err)
 				}
+				if len(byteKey) != 32 {
+					return nil, errors.New("storage keys must be 32 bytes in length")
+				}
 				byteVal, _, err := p.processAnyValueAsByteArray(storageKvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage value: %w", err)
