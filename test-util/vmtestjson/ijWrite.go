@@ -115,7 +115,7 @@ func transactionToOJ(tx *Transaction) oj.OJsonObject {
 	argOJ := oj.OJsonList(argList)
 	transactionOJ.Put("arguments", &argOJ)
 
-	transactionOJ.Put("contractCode", stringToOJ(tx.ContractCode))
+	transactionOJ.Put("contractCode", stringToOJ(byteArrayToString(tx.Code)))
 	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	transactionOJ.Put("from", accountAddressToOJ(tx.From))
 

@@ -2,6 +2,7 @@ package vmtestjson
 
 import (
 	"errors"
+	"fmt"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
@@ -38,6 +39,7 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 	}
 	test := Test{CheckGas: true}
 
+	var err error
 	for _, kvp := range testMap.OrderedKV {
 		if kvp.Key == "checkGas" {
 			checkGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
@@ -48,10 +50,9 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 		}
 
 		if kvp.Key == "pre" {
-			var err error
 			test.Pre, err = p.processAccountMap(kvp.Value)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("cannot parse pre: %w", err)
 			}
 		}
 
@@ -70,26 +71,23 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 		}
 
 		if kvp.Key == "network" {
-			var networkOk bool
-			test.Network, networkOk = p.parseString(kvp.Value)
-			if !networkOk {
-				return nil, errors.New("test network value not a string")
+			test.Network, err = p.parseString(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("test network value not a string: %w", err)
 			}
 		}
 
 		if kvp.Key == "blockhashes" {
-			var bhsOk bool
-			test.BlockHashes, bhsOk = p.parseByteArrayList(kvp.Value)
-			if !bhsOk {
-				return nil, errors.New("unmarshalled blockHashes object is not a list")
+			test.BlockHashes, err = p.parseByteArrayList(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("unmarshalled blockHashes object is not a list: %w", err)
 			}
 		}
 
 		if kvp.Key == "postState" {
-			var err error
 			test.PostState, err = p.processAccountMap(kvp.Value)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("cannot parse postState: %w", err)
 			}
 		}
 	}

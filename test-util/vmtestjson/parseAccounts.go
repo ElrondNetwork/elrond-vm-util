@@ -2,6 +2,7 @@ package vmtestjson
 
 import (
 	"errors"
+	"fmt"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
@@ -24,20 +25,20 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	}
 
 	acct := Account{}
-	var nonceOk, balanceOk, codeOk, dataOk bool
+	var err error
 
 	for _, kvp := range acctMap.OrderedKV {
 
 		if kvp.Key == "nonce" {
-			acct.Nonce, nonceOk = p.processBigInt(kvp.Value)
-			if !nonceOk {
+			acct.Nonce, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
 		}
 
 		if kvp.Key == "balance" {
-			acct.Balance, balanceOk = p.processBigInt(kvp.Value)
-			if !balanceOk {
+			acct.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
 				return nil, errors.New("invalid account balance")
 			}
 		}
@@ -48,17 +49,13 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				return nil, errors.New("invalid account storage")
 			}
 			for _, storageKvp := range storageMap.OrderedKV {
-				byteKey, keyOk := p.parseAnyValueAsByteArray(storageKvp.Key)
-				if keyOk != nil {
-					return nil, errors.New("invalid account storage key")
+				byteKey, err := p.parseAnyValueAsByteArray(storageKvp.Key)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account storage key: %w", err)
 				}
-				strVal, valStrOk := p.parseString(storageKvp.Value)
-				if !valStrOk {
-					return nil, errors.New("invalid account storage value")
-				}
-				byteVal, valOk := p.parseAnyValueAsByteArray(strVal)
-				if valOk != nil {
-					return nil, errors.New("invalid account storage value")
+				byteVal, _, err := p.processAnyValueAsByteArray(storageKvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account storage value: %w", err)
 				}
 				stElem := StorageKeyValuePair{
 					Key:   byteKey,
@@ -69,17 +66,16 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 		}
 
 		if kvp.Key == "code" {
-			acct.Code, codeOk = p.parseString(kvp.Value)
-			if !codeOk {
-				return nil, errors.New("invalid account code")
+			acct.Code, acct.OriginalCode, err = p.processAnyValueAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
-			acct.OriginalCode = acct.Code
 		}
 
 		if kvp.Key == "asyncCallData" {
-			acct.AsyncCallData, dataOk = p.parseString(kvp.Value)
-			if !dataOk {
-				return nil, errors.New("invalid asyncCallData string")
+			acct.AsyncCallData, err = p.parseString(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid asyncCallData string: %w", err)
 			}
 		}
 	}

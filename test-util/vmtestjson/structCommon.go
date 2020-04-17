@@ -11,7 +11,7 @@ type Account struct {
 	Nonce         *big.Int
 	Balance       *big.Int
 	Storage       []*StorageKeyValuePair
-	Code          string
+	Code          []byte
 	OriginalCode  string
 	AsyncCallData string
 }
@@ -24,17 +24,16 @@ type StorageKeyValuePair struct {
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {
-	Nonce         uint64
-	Value         *big.Int
-	IsCreate      bool
-	From          []byte
-	To            []byte
-	Function      string
-	ContractCode  string
-	AssembledCode string
-	Arguments     [][]byte
-	GasPrice      uint64
-	GasLimit      uint64
+	Nonce     uint64
+	Value     *big.Int
+	IsCreate  bool
+	From      []byte
+	To        []byte
+	Function  string
+	Code      []byte
+	Arguments [][]byte
+	GasPrice  uint64
+	GasLimit  uint64
 }
 
 // TransactionResult is a json object representing an expected transaction result.

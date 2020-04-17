@@ -104,3 +104,12 @@ func TestSignedNumber(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xfb}, result)
 }
+
+func TestFile(t *testing.T) {
+	p := Parser{
+		FileResolver: NewDefaultFileResolver(),
+	}
+	result, err := p.parseAnyValueAsByteArray("file:exampleFile.txt")
+	require.Nil(t, err)
+	require.Equal(t, []byte("hello!"), result)
+}

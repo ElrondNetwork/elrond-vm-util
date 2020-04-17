@@ -2,6 +2,7 @@ package vmtestjson
 
 import (
 	"errors"
+	"fmt"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
@@ -12,6 +13,7 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 		return nil, errors.New("unmarshalled logs list is not a list")
 	}
 	var logEntries []*LogEntry
+	var err error
 	for _, logRaw := range logList.AsList() {
 		logMap, isMap := logRaw.(*oj.OJsonMap)
 		if !isMap {
@@ -20,44 +22,39 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 		logEntry := LogEntry{}
 		for _, kvp := range logMap.OrderedKV {
 			if kvp.Key == "address" {
-				accountStr, strOk := p.parseString(kvp.Value)
-				if !strOk {
-					return nil, errors.New("unmarshalled log entry address is not a json string")
+				accountStr, err := p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("unmarshalled log entry address is not a json string: %w", err)
 				}
-				var err error
 				logEntry.Address, err = p.parseAccountAddress(accountStr)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if kvp.Key == "identifier" {
-				strVal, valStrOk := p.parseString(kvp.Value)
-				if !valStrOk {
-					return nil, errors.New("invalid log identifier")
+				strVal, err := p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
-				var identifierErr error
-				logEntry.Identifier, identifierErr = p.parseAnyValueAsByteArray(strVal)
-				if identifierErr != nil {
-					return nil, errors.New("invalid log identifier")
+				logEntry.Identifier, err = p.parseAnyValueAsByteArray(strVal)
+				if err != nil {
+					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
 				if len(logEntry.Identifier) != 32 {
-					return nil, errors.New("invalid log identifier - should be 32 bytes in length")
+					return nil, fmt.Errorf("invalid log identifier - should be 32 bytes in length")
 				}
 			}
 			if kvp.Key == "topics" {
-				var topicsOk bool
-				logEntry.Topics, topicsOk = p.parseByteArrayList(kvp.Value)
-				if !topicsOk {
-					return nil, errors.New("unmarshalled log entry topics is not big int list")
+				logEntry.Topics, err = p.parseByteArrayList(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("unmarshalled log entry topics is not big int list: %w", err)
 				}
 			}
 			if kvp.Key == "data" {
-				var dataOk bool
-				dataAsInt, dataOk := p.processBigInt(kvp.Value)
-				if !dataOk {
-					return nil, errors.New("cannot parse log entry data")
+				logEntry.Data, _, err = p.processAnyValueAsByteArray(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("cannot parse log entry data: %w", err)
 				}
-				logEntry.Data = dataAsInt.Bytes()
 
 			}
 		}

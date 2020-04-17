@@ -9,16 +9,16 @@ import (
 )
 
 // RunSingleJSONTest parses and prepares test, then calls testCallback.
-func RunSingleJSONTest(testFilePath string, testExecutor VMTestExecutor) error {
+func (r *Runner) RunSingleJSONTest(contextPath string) error {
 	var err error
-	testFilePath, err = filepath.Abs(testFilePath)
+	contextPath, err = filepath.Abs(contextPath)
 	if err != nil {
 		return err
 	}
 
 	// Open our jsonFile
 	var jsonFile *os.File
-	jsonFile, err = os.Open(testFilePath)
+	jsonFile, err = os.Open(contextPath)
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		return err
@@ -32,50 +32,16 @@ func RunSingleJSONTest(testFilePath string, testExecutor VMTestExecutor) error {
 		return err
 	}
 
-	top, parseErr := ij.ParseTestFile(byteValue)
+	r.Parser.FileResolver.SetContext(contextPath)
+	top, parseErr := r.Parser.ParseTestFile(byteValue)
 	if parseErr != nil {
 		return parseErr
 	}
 
 	for _, test := range top {
-		assembleErr := processCodeInTest(testFilePath, test, testExecutor)
-		if assembleErr != nil {
-			return assembleErr
-		}
-		testErr := testExecutor.Run(test)
+		testErr := r.Executor.Run(test)
 		if testErr != nil {
 			return testErr
-		}
-	}
-
-	return nil
-}
-
-func processCodeInTest(testFilePath string, test *ij.Test, testExecutor VMTestExecutor) error {
-	testDirPath := filepath.Dir(testFilePath)
-
-	var assErr error
-	for _, acct := range test.Pre {
-		acct.Code, assErr = testExecutor.ProcessCode(testDirPath, acct.Code)
-		if assErr != nil {
-			return assErr
-		}
-	}
-	for _, acct := range test.PostState {
-		acct.Code, assErr = testExecutor.ProcessCode(testDirPath, acct.Code)
-		if assErr != nil {
-			return assErr
-		}
-	}
-
-	for _, block := range test.Blocks {
-		for _, tx := range block.Transactions {
-			if tx.IsCreate {
-				tx.AssembledCode, assErr = testExecutor.ProcessCode(testDirPath, tx.ContractCode)
-				if assErr != nil {
-					return assErr
-				}
-			}
 		}
 	}
 

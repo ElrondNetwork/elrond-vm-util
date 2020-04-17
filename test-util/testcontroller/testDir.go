@@ -25,12 +25,11 @@ func isExcluded(excludedFilePatterns []string, testPath string, generalTestPath 
 
 // RunAllJSONTestsInDirectory walks directory, parses and prepares all json tests,
 // then calls testExecutor for each of them.
-func RunAllJSONTestsInDirectory(
+func (r *Runner) RunAllJSONTestsInDirectory(
 	generalTestPath string,
 	specificTestPath string,
 	allowedSuffix string,
-	excludedFilePatterns []string,
-	testExecutor VMTestExecutor) error {
+	excludedFilePatterns []string) error {
 
 	mainDirPath := path.Join(generalTestPath, specificTestPath)
 	var nrPassed, nrFailed, nrSkipped int
@@ -42,7 +41,7 @@ func RunAllJSONTestsInDirectory(
 				nrSkipped++
 				fmt.Print("  skip\n")
 			} else {
-				testErr := RunSingleJSONTest(testFilePath, testExecutor)
+				testErr := r.RunSingleJSONTest(testFilePath)
 				if testErr == nil {
 					nrPassed++
 					fmt.Print("  ok\n")

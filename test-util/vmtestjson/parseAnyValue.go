@@ -2,12 +2,23 @@ package vmtestjson
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
+
+func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) ([]byte, string, error) {
+	strVal, err := p.parseString(obj)
+	if err != nil {
+		return nil, "", err
+	}
+	result, err := p.parseAnyValueAsByteArray(strVal)
+	return result, strVal, err
+}
 
 func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	if len(strRaw) == 0 {
@@ -48,6 +59,18 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
 	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
+
+	// file contents
+	if strings.HasPrefix(strRaw, "file:") {
+		if p.FileResolver == nil {
+			return []byte{}, errors.New("parser FileResolver not provided")
+		}
+		fileContents, err := p.FileResolver.ResolveFileValue(strRaw[5:])
+		if err != nil {
+			return []byte{}, err
+		}
+		return fileContents, nil
+	}
 
 	// hex, the usual representation
 	if strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X") {
