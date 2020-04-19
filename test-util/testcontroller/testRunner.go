@@ -8,13 +8,13 @@ type VMTestExecutor interface {
 	Run(*ij.Test) error
 }
 
-type Runner struct {
+type TestRunner struct {
 	Executor VMTestExecutor
 	Parser   ij.Parser
 }
 
-func NewRunner(executor VMTestExecutor, fileResolver ij.FileResolver) *Runner {
-	return &Runner{
+func NewTestRunner(executor VMTestExecutor, fileResolver ij.FileResolver) *TestRunner {
+	return &TestRunner{
 		Executor: executor,
 		Parser: ij.Parser{
 			FileResolver: fileResolver,

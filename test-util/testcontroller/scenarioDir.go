@@ -9,23 +9,9 @@ import (
 	"strings"
 )
 
-func isExcluded(excludedFilePatterns []string, testPath string, generalTestPath string) bool {
-	for _, et := range excludedFilePatterns {
-		excludedFullPath := path.Join(generalTestPath, et)
-		match, err := filepath.Match(excludedFullPath, testPath)
-		if err != nil {
-			panic(err)
-		}
-		if match {
-			return true
-		}
-	}
-	return false
-}
-
-// RunAllJSONTestsInDirectory walks directory, parses and prepares all json tests,
-// then calls testExecutor for each of them.
-func (r *TestRunner) RunAllJSONTestsInDirectory(
+// RunAllJSONScenariosInDirectory walks directory, parses and prepares all json scenarios,
+// then calls scenarioExecutor for each of them.
+func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 	generalTestPath string,
 	specificTestPath string,
 	allowedSuffix string,
@@ -36,12 +22,12 @@ func (r *TestRunner) RunAllJSONTestsInDirectory(
 
 	err := filepath.Walk(mainDirPath, func(testFilePath string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(testFilePath, allowedSuffix) {
-			fmt.Printf("Test: %s ... ", shortenTestPath(testFilePath, generalTestPath))
+			fmt.Printf("Scenario: %s ... ", shortenTestPath(testFilePath, generalTestPath))
 			if isExcluded(excludedFilePatterns, testFilePath, generalTestPath) {
 				nrSkipped++
 				fmt.Print("  skip\n")
 			} else {
-				testErr := r.RunSingleJSONTest(testFilePath)
+				testErr := r.RunSingleJSONScenario(testFilePath)
 				if testErr == nil {
 					nrPassed++
 					fmt.Print("  ok\n")
@@ -62,11 +48,4 @@ func (r *TestRunner) RunAllJSONTestsInDirectory(
 	}
 
 	return nil
-}
-
-func shortenTestPath(path string, generalTestPath string) string {
-	if strings.HasPrefix(path, generalTestPath+"/") {
-		return path[len(generalTestPath)+1:]
-	}
-	return path
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // RunSingleJSONTest parses and prepares test, then calls testCallback.
-func (r *Runner) RunSingleJSONTest(contextPath string) error {
+func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 	var err error
 	contextPath, err = filepath.Abs(contextPath)
 	if err != nil {
