@@ -16,29 +16,23 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 	blr := TransactionResult{}
 	var err error
 	for _, kvp := range blrMap.OrderedKV {
-
-		if kvp.Key == "out" {
+		switch kvp.Key {
+		case "out":
 			blr.Out, err = p.parseByteArrayList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result out: %w", err)
 			}
-		}
-
-		if kvp.Key == "status" {
+		case "status":
 			blr.Status, err = p.processBigInt(kvp.Value, bigIntSignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result status: %w", err)
 			}
-		}
-
-		if kvp.Key == "message" {
+		case "message":
 			blr.Message, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}
-		}
-
-		if kvp.Key == "gas" {
+		case "gas":
 			if isStar(kvp.Value) {
 				blr.CheckGas = false
 				blr.Gas = 0
@@ -49,9 +43,7 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 					return nil, fmt.Errorf("invalid block result gas: %w", err)
 				}
 			}
-		}
-
-		if kvp.Key == "logs" {
+		case "logs":
 			if isStar(kvp.Value) {
 				blr.IgnoreLogs = true
 			} else {
@@ -65,9 +57,7 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 					}
 				}
 			}
-		}
-
-		if kvp.Key == "refund" {
+		case "refund":
 			if isStar(kvp.Value) {
 				blr.Refund = nil
 			} else {
@@ -76,6 +66,8 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 					return nil, fmt.Errorf("invalid block result refund: %w", err)
 				}
 			}
+		default:
+			return nil, fmt.Errorf("unknown tx result field: %s", kvp.Key)
 		}
 	}
 

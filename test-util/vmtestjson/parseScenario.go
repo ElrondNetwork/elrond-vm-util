@@ -134,7 +134,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 					return nil, fmt.Errorf("cannot parse tx step transaction: %w", err)
 				}
 			case "expect":
-				step.ExpectedResult, err = p.processTxExpectedResult(stepObj)
+				step.ExpectedResult, err = p.processTxExpectedResult(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("cannot parse tx expected result: %w", err)
 				}
