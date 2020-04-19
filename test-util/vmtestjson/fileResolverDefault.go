@@ -28,10 +28,12 @@ func (fr *DefaultFileResolver) ReplacePath(pathInTest, actualPath string) *Defau
 	return fr
 }
 
+// SetContext sets directory where the test runs, to help resolve relative paths.
 func (fr *DefaultFileResolver) SetContext(contextPath string) {
 	fr.contextPath = contextPath
 }
 
+// ResolveFileValue converts a value prefixed with "file:" and replaces it with the file contents.
 func (fr *DefaultFileResolver) ResolveFileValue(value string) ([]byte, error) {
 	if len(value) == 0 {
 		return []byte{}, nil
