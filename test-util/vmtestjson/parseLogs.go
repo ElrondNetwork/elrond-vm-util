@@ -21,7 +21,8 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 		}
 		logEntry := LogEntry{}
 		for _, kvp := range logMap.OrderedKV {
-			if kvp.Key == "address" {
+			switch kvp.Key {
+			case "address":
 				accountStr, err := p.parseString(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("unmarshalled log entry address is not a json string: %w", err)
@@ -30,8 +31,7 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 				if err != nil {
 					return nil, err
 				}
-			}
-			if kvp.Key == "identifier" {
+			case "identifier":
 				strVal, err := p.parseString(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
@@ -43,19 +43,18 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 				if len(logEntry.Identifier) != 32 {
 					return nil, fmt.Errorf("invalid log identifier - should be 32 bytes in length")
 				}
-			}
-			if kvp.Key == "topics" {
+			case "topics":
 				logEntry.Topics, err = p.parseByteArrayList(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("unmarshalled log entry topics is not big int list: %w", err)
 				}
-			}
-			if kvp.Key == "data" {
+			case "data":
 				logEntry.Data, _, err = p.processAnyValueAsByteArray(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("cannot parse log entry data: %w", err)
 				}
-
+			default:
+				return nil, fmt.Errorf("unknown log field: %s", kvp.Key)
 			}
 		}
 		logEntries = append(logEntries, &logEntry)

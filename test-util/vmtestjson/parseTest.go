@@ -41,22 +41,19 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 
 	var err error
 	for _, kvp := range testMap.OrderedKV {
-		if kvp.Key == "checkGas" {
+		switch kvp.Key {
+		case "checkGas":
 			checkGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
 			if !isBool {
 				return nil, errors.New("unmarshalled test checkGas flag is not boolean")
 			}
 			test.CheckGas = bool(*checkGasOJ)
-		}
-
-		if kvp.Key == "pre" {
+		case "pre":
 			test.Pre, err = p.processAccountMap(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("cannot parse pre: %w", err)
 			}
-		}
-
-		if kvp.Key == "blocks" {
+		case "blocks":
 			blocksRaw, blocksOk := kvp.Value.(*oj.OJsonList)
 			if !blocksOk {
 				return nil, errors.New("unmarshalled blocks object is not a list")
@@ -68,27 +65,24 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 				}
 				test.Blocks = append(test.Blocks, bl)
 			}
-		}
-
-		if kvp.Key == "network" {
+		case "network":
 			test.Network, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("test network value not a string: %w", err)
 			}
-		}
 
-		if kvp.Key == "blockhashes" {
+		case "blockhashes":
 			test.BlockHashes, err = p.parseByteArrayList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshalled blockHashes object is not a list: %w", err)
 			}
-		}
-
-		if kvp.Key == "postState" {
+		case "postState":
 			test.PostState, err = p.processAccountMap(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("cannot parse postState: %w", err)
 			}
+		default:
+			return nil, fmt.Errorf("unknown test: %s", kvp.Key)
 		}
 	}
 

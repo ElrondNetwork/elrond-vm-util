@@ -15,8 +15,8 @@ func (p *Parser) processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 	bl := Block{}
 
 	for _, kvp := range blockMap.OrderedKV {
-
-		if kvp.Key == "results" {
+		switch kvp.Key {
+		case "results":
 			resultsRaw, resultsOk := kvp.Value.(*oj.OJsonList)
 			if !resultsOk {
 				return nil, errors.New("unmarshalled block results object is not a list")
@@ -28,9 +28,7 @@ func (p *Parser) processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 				}
 				bl.Results = append(bl.Results, blr)
 			}
-		}
-
-		if kvp.Key == "transactions" {
+		case "transactions":
 			transactionsRaw, transactionsOk := kvp.Value.(*oj.OJsonList)
 			if !transactionsOk {
 				return nil, errors.New("unmarshalled block transactions object is not a list")
@@ -42,14 +40,14 @@ func (p *Parser) processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 				}
 				bl.Transactions = append(bl.Transactions, tr)
 			}
-		}
-
-		if kvp.Key == "blockHeader" {
+		case "blockHeader":
 			blh, blhErr := p.processBlockHeader(kvp.Value)
 			if blhErr != nil {
 				return nil, blhErr
 			}
 			bl.BlockHeader = blh
+		default:
+			return nil, fmt.Errorf("unknown block field: %s", kvp.Key)
 		}
 	}
 
@@ -70,40 +68,34 @@ func (p *Parser) processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 	var err error
 
 	for _, kvp := range blhMap.OrderedKV {
-
-		if kvp.Key == "gasLimit" {
+		switch kvp.Key {
+		case "gasLimit":
 			blh.GasLimit, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block header gasLimit: %w", err)
 			}
-		}
-
-		if kvp.Key == "number" {
+		case "number":
 			blh.Number, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block header number: %w", err)
 			}
-		}
-
-		if kvp.Key == "difficulty" {
+		case "difficulty":
 			blh.Difficulty, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block header difficulty: %w", err)
 			}
-		}
-
-		if kvp.Key == "timestamp" {
+		case "timestamp":
 			blh.Timestamp, err = p.parseUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block header timestamp: %w", err)
 			}
-		}
-
-		if kvp.Key == "coinbase" {
+		case "coinbase":
 			blh.Beneficiary, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block header coinbase: %w", err)
 			}
+		default:
+			return nil, fmt.Errorf("unknown block header field: %s", kvp.Key)
 		}
 	}
 

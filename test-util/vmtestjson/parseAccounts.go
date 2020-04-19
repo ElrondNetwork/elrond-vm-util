@@ -28,22 +28,19 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	var err error
 
 	for _, kvp := range acctMap.OrderedKV {
-
-		if kvp.Key == "nonce" {
+		switch kvp.Key {
+		case "nonce":
 			acct.Nonce, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
-		}
 
-		if kvp.Key == "balance" {
+		case "balance":
 			acct.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, errors.New("invalid account balance")
 			}
-		}
-
-		if kvp.Key == "storage" {
+		case "storage":
 			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
 			if !storageOk {
 				return nil, errors.New("invalid account storage")
@@ -66,20 +63,18 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				}
 				acct.Storage = append(acct.Storage, &stElem)
 			}
-		}
-
-		if kvp.Key == "code" {
+		case "code":
 			acct.Code, acct.OriginalCode, err = p.processAnyValueAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
-		}
-
-		if kvp.Key == "asyncCallData" {
+		case "asyncCallData":
 			acct.AsyncCallData, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid asyncCallData string: %w", err)
 			}
+		default:
+			return nil, fmt.Errorf("unknown account field: %s", kvp.Key)
 		}
 	}
 
