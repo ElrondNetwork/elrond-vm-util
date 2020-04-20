@@ -16,13 +16,23 @@ const (
 )
 
 func (p *Parser) processBigInt(obj oj.OJsonObject, format bigIntParseFormat) (JSONBigInt, error) {
+	if isStar(obj) {
+		// "*" means any value, skip checking it
+		return JSONBigInt{
+			Value:    nil,
+			IsStar:   true,
+			Original: "*"}, nil
+	}
+
 	strVal, err := p.parseString(obj)
 	if err != nil {
 		return JSONBigInt{}, err
 	}
+
 	bi, err := p.parseBigInt(strVal, format)
 	return JSONBigInt{
 		Value:    bi,
+		IsStar:   false,
 		Original: strVal,
 	}, err
 }
@@ -48,11 +58,21 @@ func (p *Parser) processUint64(obj oj.OJsonObject) (JSONUint64, error) {
 		return JSONUint64{}, err
 	}
 
+	if bi.IsStar {
+		return JSONUint64{
+			Value:    0,
+			IsStar:   true,
+			Original: bi.Original}, nil
+	}
+
 	if bi.Value == nil || !bi.Value.IsUint64() {
 		return JSONUint64{}, errors.New("value is not uint64")
 	}
 
-	return JSONUint64{Value: bi.Value.Uint64(), Original: bi.Original}, nil
+	return JSONUint64{
+		Value:    bi.Value.Uint64(),
+		IsStar:   false,
+		Original: bi.Original}, nil
 }
 
 func (p *Parser) parseString(obj oj.OJsonObject) (string, error) {

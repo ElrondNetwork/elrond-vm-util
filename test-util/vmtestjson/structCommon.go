@@ -14,19 +14,21 @@ type JSONBytes struct {
 // JSONBigInt stores the parsed big int value but also the original parsed string
 type JSONBigInt struct {
 	Value    *big.Int
+	IsStar   bool
 	Original string
 }
 
 // JSONUint64 stores the parsed uint64 value but also the original parsed string
 type JSONUint64 struct {
 	Value    uint64
+	IsStar   bool
 	Original string
 }
 
 // Account is a json object representing an account.
 type Account struct {
 	Address       JSONBytes
-	Nonce         JSONBigInt
+	Nonce         JSONUint64
 	Balance       JSONBigInt
 	Storage       []*StorageKeyValuePair
 	Code          JSONBytes

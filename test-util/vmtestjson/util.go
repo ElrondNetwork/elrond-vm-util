@@ -30,8 +30,8 @@ func ResultAsString(result [][]byte) string {
 // JSONBytesValues extracts values from a slice of JSONBytes into a list
 func JSONBytesValues(jbs []JSONBytes) [][]byte {
 	result := make([][]byte, len(jbs))
-	for _, jb := range jbs {
-		result = append(result, jb.Value)
+	for i, jb := range jbs {
+		result[i] = jb.Value
 	}
 	return result
 }

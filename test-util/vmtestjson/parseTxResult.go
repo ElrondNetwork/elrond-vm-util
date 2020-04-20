@@ -33,15 +33,10 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}
 		case "gas":
-			if isStar(kvp.Value) {
-				blr.CheckGas = false
-				blr.Gas = JSONUint64{Value: 0, Original: "*"}
-			} else {
-				blr.CheckGas = true
-				blr.Gas, err = p.processUint64(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("invalid block result gas: %w", err)
-				}
+			blr.CheckGas = true
+			blr.Gas, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid block result gas: %w", err)
 			}
 		case "logs":
 			if isStar(kvp.Value) {
@@ -58,13 +53,9 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 				}
 			}
 		case "refund":
-			if isStar(kvp.Value) {
-				blr.Refund = JSONBigInt{Original: "*"}
-			} else {
-				blr.Refund, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
-				if err != nil {
-					return nil, fmt.Errorf("invalid block result refund: %w", err)
-				}
+			blr.Refund, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
+				return nil, fmt.Errorf("invalid block result refund: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown tx result field: %s", kvp.Key)
