@@ -75,9 +75,9 @@ type LogEntry struct {
 }
 
 // FindAccount searches an account list by address.
-func FindAccount(accounts []*Account, address JSONBytes) *Account {
+func FindAccount(accounts []*Account, address []byte) *Account {
 	for _, acct := range accounts {
-		if bytes.Equal(acct.Address.Value, address.Value) {
+		if bytes.Equal(acct.Address.Value, address) {
 			return acct
 		}
 	}

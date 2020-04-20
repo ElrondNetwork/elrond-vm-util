@@ -51,7 +51,7 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 // tool to modify tests
 // use with extreme caution
 func saveModifiedTest(toPath string, top []*ij.Test) {
-	resultJSON := ij.ToJSONString(top)
+	resultJSON := ij.TestToJSONString(top)
 
 	err := os.MkdirAll(filepath.Dir(toPath), os.ModePerm)
 	if err != nil {

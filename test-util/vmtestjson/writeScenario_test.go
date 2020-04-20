@@ -1,7 +1,6 @@
 package vmtestjson
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -23,7 +22,7 @@ func TestWriteScenario(t *testing.T) {
 	serialized := ScenarioToJSONString(scenario)
 
 	// good for debugging:
-	_ = ioutil.WriteFile("example_re.scen.json", []byte(serialized), 0644)
+	// _ = ioutil.WriteFile("example_re.scen.json", []byte(serialized), 0644)
 
 	require.Equal(t, contents, []byte(serialized))
 }

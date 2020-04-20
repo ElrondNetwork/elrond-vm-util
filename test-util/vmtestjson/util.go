@@ -7,12 +7,12 @@ import (
 )
 
 // ResultEqual returns true if result bytes encode the same number.
-func ResultEqual(expected, actual []byte) bool {
-	if bytes.Equal(expected, actual) {
+func ResultEqual(expected JSONBytes, actual []byte) bool {
+	if bytes.Equal(expected.Value, actual) {
 		return true
 	}
 
-	return big.NewInt(0).SetBytes(expected).Cmp(big.NewInt(0).SetBytes(actual)) == 0
+	return big.NewInt(0).SetBytes(expected.Value).Cmp(big.NewInt(0).SetBytes(actual)) == 0
 }
 
 // ResultAsString helps create nicer error messages.
@@ -25,4 +25,13 @@ func ResultAsString(result [][]byte) string {
 		}
 	}
 	return str + "]"
+}
+
+// JSONBytesValues extracts values from a slice of JSONBytes into a list
+func JSONBytesValues(jbs []JSONBytes) [][]byte {
+	result := make([][]byte, len(jbs))
+	for _, jb := range jbs {
+		result = append(result, jb.Value)
+	}
+	return result
 }
