@@ -34,11 +34,23 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 		stepOJ.Put("step", stringToOJ(generalStep.StepTypeName()))
 		switch step := generalStep.(type) {
 		case *SetStateStep:
+			if len(step.Comment) > 0 {
+				stepOJ.Put("comment", stringToOJ(step.Comment))
+			}
 			stepOJ.Put("accounts", accountsToOJ(step.Accounts))
 			stepOJ.Put("blockhashes", blockHashesToOJ(step.BlockHashes))
 		case *CheckStateStep:
+			if len(step.Comment) > 0 {
+				stepOJ.Put("comment", stringToOJ(step.Comment))
+			}
 			stepOJ.Put("accounts", accountsToOJ(step.CheckAccounts))
 		case *TxStep:
+			if len(step.TxIdent) > 0 {
+				stepOJ.Put("txId", stringToOJ(step.TxIdent))
+			}
+			if len(step.Comment) > 0 {
+				stepOJ.Put("comment", stringToOJ(step.Comment))
+			}
 			stepOJ.Put("tx", transactionToScenarioOJ(step.Tx))
 			stepOJ.Put("expect", resultToOJ(step.ExpectedResult))
 		}

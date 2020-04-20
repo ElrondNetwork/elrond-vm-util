@@ -93,6 +93,11 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
+			case "comment":
+				step.Comment, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad set state step comment: %w", err)
+				}
 			case "accounts":
 				step.Accounts, err = p.processAccountMap(kvp.Value)
 				if err != nil {
@@ -113,10 +118,15 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
+			case "comment":
+				step.Comment, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad check state step comment: %w", err)
+				}
 			case "accounts":
 				step.CheckAccounts, err = p.processAccountMap(kvp.Value)
 				if err != nil {
-					return nil, fmt.Errorf("cannot parse set state step: %w", err)
+					return nil, fmt.Errorf("cannot parse check state step: %w", err)
 				}
 			default:
 				return nil, fmt.Errorf("invalid check state field: %s", kvp.Key)
@@ -128,6 +138,16 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
+			case "txId":
+				step.TxIdent, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad tx step id: %w", err)
+				}
+			case "comment":
+				step.Comment, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad tx step comment: %w", err)
+				}
 			case "tx":
 				step.Tx, err = p.processTx(kvp.Value)
 				if err != nil {

@@ -5,6 +5,7 @@
     "steps": [
         {
             "step": "setState",
+            "comment": "not much to comment here, but we can",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                     "nonce": "0",
@@ -29,6 +30,8 @@
         },
         {
             "step": "tx",
+            "txId": "1",
+            "comment": "just an example",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
@@ -64,6 +67,7 @@
         },
         {
             "step": "checkState",
+            "comment": "check that previous tx did the right thing",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                     "nonce": "1",

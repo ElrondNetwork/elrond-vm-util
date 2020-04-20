@@ -15,17 +15,21 @@ type Step interface {
 
 // SetStateStep is a step where data is saved to the blockchain mock.
 type SetStateStep struct {
+	Comment     string
 	Accounts    []*Account
 	BlockHashes []JSONBytes
 }
 
 // CheckStateStep is a step where the state of the blockchain mock is verified.
 type CheckStateStep struct {
+	Comment       string
 	CheckAccounts []*Account
 }
 
 // TxStep is a step where a transaction is executed.
 type TxStep struct {
+	TxIdent        string
+	Comment        string
 	Tx             *Transaction
 	ExpectedResult *TransactionResult
 }
