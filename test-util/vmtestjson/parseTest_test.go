@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func loadTestExample() ([]byte, error) {
+func loadExampleFile(path string) ([]byte, error) {
 	// Open our jsonFile
 	var jsonFile *os.File
 	var err error
-	jsonFile, err = os.Open("example.test.json")
+	jsonFile, err = os.Open(path)
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		return nil, err
@@ -25,11 +25,8 @@ func loadTestExample() ([]byte, error) {
 }
 
 func TestParseTest(t *testing.T) {
-	contents, err := loadTestExample()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	contents, err := loadExampleFile("example.test.json")
+	require.Nil(t, err)
 
 	p := Parser{
 		FileResolver: NewDefaultFileResolver().ReplacePath(

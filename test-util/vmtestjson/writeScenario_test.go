@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWriteTest(t *testing.T) {
-	contents, err := loadExampleFile("example.test.json")
+func TestWriteScenario(t *testing.T) {
+	contents, err := loadExampleFile("example.scen.json")
 	require.Nil(t, err)
 
 	p := Parser{
@@ -16,13 +16,13 @@ func TestWriteTest(t *testing.T) {
 			"exampleFile.txt"),
 	}
 
-	testTopLevel, parseErr := p.ParseTestFile(contents)
+	scenario, parseErr := p.ParseScenarioFile(contents)
 	require.Nil(t, parseErr)
 
-	serialized := TestToJSONString(testTopLevel)
+	serialized := ScenarioToJSONString(scenario)
 
 	// good for debugging:
-	// _ = ioutil.WriteFile("example.re__.json", []byte(serialized), 0644)
+	// _ = ioutil.WriteFile("example_re.scen.json", []byte(serialized), 0644)
 
 	require.Equal(t, contents, []byte(serialized))
 }
