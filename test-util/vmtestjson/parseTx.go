@@ -66,7 +66,7 @@ func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
 				return nil, fmt.Errorf("invalid block transaction arguments: %w", err)
 			}
 		case "contractCode":
-			blt.Code, _, err = p.processAnyValueAsByteArray(kvp.Value)
+			blt.Code, err = p.processAnyValueAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction contract code: %w", err)
 			}

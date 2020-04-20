@@ -1,7 +1,7 @@
 package vmtestjson
 
 import (
-	"encoding/hex"
+	"fmt"
 	"math/big"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
@@ -44,7 +44,7 @@ func testToOJ(test *Test) oj.OJsonObject {
 
 	var blockhashesList []oj.OJsonObject
 	for _, blh := range test.BlockHashes {
-		blockhashesList = append(blockhashesList, stringToOJ(byteArrayToString(blh)))
+		blockhashesList = append(blockhashesList, byteArrayToOJ(blh))
 	}
 	blockHashesOJ := oj.OJsonList(blockhashesList)
 	testOJ.Put("blockhashes", &blockHashesOJ)
@@ -61,7 +61,7 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 		acctOJ.Put("balance", intToOJ(account.Balance))
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
-			storageOJ.Put(byteArrayToString(st.Key), stringToOJ(byteArrayToString(st.Value)))
+			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
 		}
 		acctOJ.Put("storage", storageOJ)
 		acctOJ.Put("code", stringToOJ(account.OriginalCode))
@@ -106,18 +106,18 @@ func transactionToOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ.Put("function", stringToOJ(tx.Function))
 	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
 	transactionOJ.Put("value", intToOJ(tx.Value))
-	transactionOJ.Put("to", accountAddressToOJ(tx.To))
+	transactionOJ.Put("to", byteArrayToOJ(tx.To))
 
 	var argList []oj.OJsonObject
 	for _, arg := range tx.Arguments {
-		argList = append(argList, stringToOJ(byteArrayToString(arg)))
+		argList = append(argList, byteArrayToOJ(arg))
 	}
 	argOJ := oj.OJsonList(argList)
 	transactionOJ.Put("arguments", &argOJ)
 
-	transactionOJ.Put("contractCode", stringToOJ(byteArrayToString(tx.Code)))
+	transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
 	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
-	transactionOJ.Put("from", accountAddressToOJ(tx.From))
+	transactionOJ.Put("from", byteArrayToOJ(tx.From))
 
 	return transactionOJ
 }
@@ -127,7 +127,7 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 
 	var outList []oj.OJsonObject
 	for _, out := range res.Out {
-		outList = append(outList, stringToOJ(byteArrayToString(out)))
+		outList = append(outList, byteArrayToOJ(out))
 	}
 	outOJ := oj.OJsonList(outList)
 	resultOJ.Put("out", &outOJ)
@@ -157,18 +157,17 @@ func LogToString(logEntry *LogEntry) string {
 
 func logToOJ(logEntry *LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
-	logOJ.Put("address", accountAddressToOJ(logEntry.Address))
-	logOJ.Put("identifier", stringToOJ(byteArrayToString(logEntry.Identifier)))
+	logOJ.Put("address", byteArrayToOJ(logEntry.Address))
+	logOJ.Put("identifier", byteArrayToOJ(logEntry.Identifier))
 
 	var topicsList []oj.OJsonObject
 	for _, topic := range logEntry.Topics {
-		topicsList = append(topicsList, stringToOJ(byteArrayToString(topic)))
+		topicsList = append(topicsList, byteArrayToOJ(topic))
 	}
 	topicsOJ := oj.OJsonList(topicsList)
 	logOJ.Put("topics", &topicsOJ)
 
-	dataAsInt := big.NewInt(0).SetBytes(logEntry.Data)
-	logOJ.Put("data", intToOJ(dataAsInt))
+	logOJ.Put("data", byteArrayToOJ(logEntry.Data))
 
 	return logOJ
 }
@@ -181,20 +180,6 @@ func logsToOJ(logEntries []*LogEntry) oj.OJsonObject {
 	}
 	logOJList := oj.OJsonList(logList)
 	return &logOJList
-}
-
-func byteArrayToString(byteArray []byte) string {
-	if len(byteArray) == 0 {
-		return "0x00"
-	}
-	return "0x" + hex.EncodeToString(byteArray)
-}
-
-func accountAddressToOJ(address []byte) oj.OJsonObject {
-	if len(address) == 0 {
-		return stringToOJ("")
-	}
-	return stringToOJ(byteArrayToString(address))
 }
 
 func intToString(i *big.Int) string {
@@ -220,12 +205,20 @@ func intToString(i *big.Int) string {
 	return str
 }
 
-func intToOJ(i *big.Int) oj.OJsonObject {
-	return &oj.OJsonString{Value: intToString(i)}
+func intToOJ(i JSONBigInt) oj.OJsonObject {
+	return &oj.OJsonString{Value: i.Original}
+}
+
+func byteArrayToString(byteArray JSONBytes) string {
+	return byteArray.Original
+}
+
+func byteArrayToOJ(byteArray JSONBytes) oj.OJsonObject {
+	return &oj.OJsonString{Value: byteArrayToString(byteArray)}
 }
 
 func uint64ToOJ(i uint64) oj.OJsonObject {
-	return intToOJ(big.NewInt(0).SetUint64(i))
+	return stringToOJ(fmt.Sprintf("%d", i))
 }
 
 func stringToOJ(str string) oj.OJsonObject {

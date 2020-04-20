@@ -5,45 +5,57 @@ import (
 	"math/big"
 )
 
+// JSONBytes stores the parsed byte slice value but also the original parsed string
+type JSONBytes struct {
+	Value    []byte
+	Original string
+}
+
+// JSONBigInt stores the parsed big int value but also the original parsed string
+type JSONBigInt struct {
+	Value    *big.Int
+	Original string
+}
+
 // Account is a json object representing an account.
 type Account struct {
-	Address       []byte
-	Nonce         *big.Int
-	Balance       *big.Int
+	Address       JSONBytes
+	Nonce         JSONBigInt
+	Balance       JSONBigInt
 	Storage       []*StorageKeyValuePair
-	Code          []byte
+	Code          JSONBytes
 	OriginalCode  string
 	AsyncCallData string
 }
 
 // StorageKeyValuePair is a json key value pair in the storage map.
 type StorageKeyValuePair struct {
-	Key   []byte
-	Value []byte
+	Key   JSONBytes
+	Value JSONBytes
 }
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {
 	Nonce     uint64
-	Value     *big.Int
+	Value     JSONBigInt
 	IsCreate  bool
-	From      []byte
-	To        []byte
+	From      JSONBytes
+	To        JSONBytes
 	Function  string
-	Code      []byte
-	Arguments [][]byte
+	Code      JSONBytes
+	Arguments []JSONBytes
 	GasPrice  uint64
 	GasLimit  uint64
 }
 
 // TransactionResult is a json object representing an expected transaction result.
 type TransactionResult struct {
-	Out        [][]byte
-	Status     *big.Int
+	Out        []JSONBytes
+	Status     JSONBigInt
 	Message    string
 	CheckGas   bool
 	Gas        uint64
-	Refund     *big.Int
+	Refund     JSONBigInt
 	IgnoreLogs bool
 	LogHash    string
 	Logs       []*LogEntry
@@ -51,16 +63,16 @@ type TransactionResult struct {
 
 // LogEntry is a json object representing an expected transaction result log entry.
 type LogEntry struct {
-	Address    []byte
-	Identifier []byte
-	Topics     [][]byte
-	Data       []byte
+	Address    JSONBytes
+	Identifier JSONBytes
+	Topics     []JSONBytes
+	Data       JSONBytes
 }
 
 // FindAccount searches an account list by address.
-func FindAccount(accounts []*Account, address []byte) *Account {
+func FindAccount(accounts []*Account, address JSONBytes) *Account {
 	for _, acct := range accounts {
-		if bytes.Equal(acct.Address, address) {
+		if bytes.Equal(acct.Address.Value, address.Value) {
 			return acct
 		}
 	}

@@ -11,13 +11,16 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) ([]byte, string, error) {
+func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (JSONBytes, error) {
 	strVal, err := p.parseString(obj)
 	if err != nil {
-		return nil, "", err
+		return JSONBytes{}, err
 	}
 	result, err := p.parseAnyValueAsByteArray(strVal)
-	return result, strVal, err
+	return JSONBytes{
+		Value:    result,
+		Original: strVal,
+	}, err
 }
 
 func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {

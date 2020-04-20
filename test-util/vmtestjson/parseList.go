@@ -22,14 +22,14 @@ func (p *Parser) processStringList(obj interface{}) ([]string, error) {
 	return result, nil
 }
 
-func (p *Parser) parseByteArrayList(obj interface{}) ([][]byte, error) {
+func (p *Parser) parseByteArrayList(obj interface{}) ([]JSONBytes, error) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, errors.New("not a JSON list")
 	}
-	var result [][]byte
+	var result []JSONBytes
 	for _, elemRaw := range listRaw.AsList() {
-		ba, _, err := p.processAnyValueAsByteArray(elemRaw)
+		ba, err := p.processAnyValueAsByteArray(elemRaw)
 		if err != nil {
 			return nil, err
 		}

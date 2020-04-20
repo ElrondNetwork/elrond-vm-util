@@ -15,12 +15,16 @@ const (
 	bigIntUnsignedBytes = iota
 )
 
-func (p *Parser) processBigInt(obj oj.OJsonObject, format bigIntParseFormat) (*big.Int, error) {
+func (p *Parser) processBigInt(obj oj.OJsonObject, format bigIntParseFormat) (JSONBigInt, error) {
 	strVal, err := p.parseString(obj)
 	if err != nil {
-		return nil, err
+		return JSONBigInt{}, err
 	}
-	return p.parseBigInt(strVal, format)
+	bi, err := p.parseBigInt(strVal, format)
+	return JSONBigInt{
+		Value:    bi,
+		Original: strVal,
+	}, err
 }
 
 func (p *Parser) parseBigInt(strRaw string, format bigIntParseFormat) (*big.Int, error) {
@@ -44,11 +48,11 @@ func (p *Parser) parseUint64(obj oj.OJsonObject) (uint64, error) {
 		return 0, err
 	}
 
-	if !bi.IsUint64() {
+	if bi.Value == nil || !bi.Value.IsUint64() {
 		return 0, errors.New("value is not uint64")
 	}
 
-	return bi.Uint64(), nil
+	return bi.Value.Uint64(), nil
 }
 
 func (p *Parser) parseString(obj oj.OJsonObject) (string, error) {

@@ -7,15 +7,15 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func (p *Parser) parseAccountAddress(addrRaw string) ([]byte, error) {
+func (p *Parser) parseAccountAddress(addrRaw string) (JSONBytes, error) {
 	if len(addrRaw) == 0 {
-		return []byte{}, errors.New("missing account address")
+		return JSONBytes{}, errors.New("missing account address")
 	}
 	addrBytes, err := p.parseAnyValueAsByteArray(addrRaw)
 	if err == nil && len(addrBytes) != 32 {
-		return []byte{}, errors.New("account addressis not 32 bytes in length")
+		return JSONBytes{}, errors.New("account addressis not 32 bytes in length")
 	}
-	return addrBytes, err
+	return JSONBytes{Value: addrBytes, Original: addrRaw}, err
 }
 
 func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
@@ -53,18 +53,18 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 				if len(byteKey) != 32 {
 					return nil, errors.New("storage keys must be 32 bytes in length")
 				}
-				byteVal, _, err := p.processAnyValueAsByteArray(storageKvp.Value)
+				byteVal, err := p.processAnyValueAsByteArray(storageKvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage value: %w", err)
 				}
 				stElem := StorageKeyValuePair{
-					Key:   byteKey,
+					Key:   JSONBytes{Value: byteKey, Original: storageKvp.Key},
 					Value: byteVal,
 				}
 				acct.Storage = append(acct.Storage, &stElem)
 			}
 		case "code":
-			acct.Code, acct.OriginalCode, err = p.processAnyValueAsByteArray(kvp.Value)
+			acct.Code, err = p.processAnyValueAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
@@ -97,6 +97,7 @@ func (p *Parser) processAccountMap(acctMapRaw oj.OJsonObject) ([]*Account, error
 			if hexErr != nil {
 				return nil, hexErr
 			}
+			//acct.Address = JSONBytes{Value: acctAddr, Original: acctKVP.Key}
 			acct.Address = acctAddr
 			accounts = append(accounts, acct)
 		}

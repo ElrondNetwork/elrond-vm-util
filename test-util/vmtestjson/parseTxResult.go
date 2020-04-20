@@ -59,7 +59,7 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 			}
 		case "refund":
 			if isStar(kvp.Value) {
-				blr.Refund = nil
+				blr.Refund = JSONBigInt{Original: "*"}
 			} else {
 				blr.Refund, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 				if err != nil {

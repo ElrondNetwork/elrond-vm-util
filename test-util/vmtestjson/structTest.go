@@ -1,7 +1,5 @@
 package vmtestjson
 
-import "math/big"
-
 // Test is a json object representing a test.
 type Test struct {
 	TestName    string
@@ -9,7 +7,7 @@ type Test struct {
 	Pre         []*Account
 	Blocks      []*Block
 	Network     string
-	BlockHashes [][]byte
+	BlockHashes []JSONBytes
 	PostState   []*Account
 }
 
@@ -22,9 +20,9 @@ type Block struct {
 
 // BlockHeader is a json object representing the block header.
 type BlockHeader struct {
-	Beneficiary *big.Int // "coinbase"
-	Difficulty  *big.Int
-	Number      *big.Int
-	GasLimit    *big.Int
+	Beneficiary JSONBigInt // "coinbase"
+	Difficulty  JSONBigInt
+	Number      JSONBigInt
+	GasLimit    JSONBigInt
 	Timestamp   uint64
 }

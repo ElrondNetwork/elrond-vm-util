@@ -36,20 +36,22 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*LogEntry, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
-				logEntry.Identifier, err = p.parseAnyValueAsByteArray(strVal)
+				var identifierValue []byte
+				identifierValue, err = p.parseAnyValueAsByteArray(strVal)
 				if err != nil {
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
-				if len(logEntry.Identifier) != 32 {
+				if len(identifierValue) != 32 {
 					return nil, fmt.Errorf("invalid log identifier - should be 32 bytes in length")
 				}
+				logEntry.Identifier = JSONBytes{Value: identifierValue, Original: strVal}
 			case "topics":
 				logEntry.Topics, err = p.parseByteArrayList(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("unmarshalled log entry topics is not big int list: %w", err)
 				}
 			case "data":
-				logEntry.Data, _, err = p.processAnyValueAsByteArray(kvp.Value)
+				logEntry.Data, err = p.processAnyValueAsByteArray(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("cannot parse log entry data: %w", err)
 				}
