@@ -1,6 +1,7 @@
 package vmtestjson
 
 import (
+	"encoding/hex"
 	"math/big"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
@@ -10,7 +11,7 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, account := range accounts {
 		acctOJ := oj.NewMap()
-		acctOJ.Put("nonce", intToOJ(account.Nonce))
+		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
 		acctOJ.Put("balance", intToOJ(account.Balance))
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
@@ -127,6 +128,9 @@ func intToOJ(i JSONBigInt) oj.OJsonObject {
 }
 
 func byteArrayToString(byteArray JSONBytes) string {
+	if len(byteArray.Original) == 0 && len(byteArray.Value) > 0 {
+		byteArray.Original = hex.EncodeToString(byteArray.Value)
+	}
 	return byteArray.Original
 }
 

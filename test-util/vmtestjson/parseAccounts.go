@@ -30,7 +30,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 	for _, kvp := range acctMap.OrderedKV {
 		switch kvp.Key {
 		case "nonce":
-			acct.Nonce, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			acct.Nonce, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
