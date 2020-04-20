@@ -1,7 +1,6 @@
 package vmtestjson
 
 import (
-	"fmt"
 	"math/big"
 
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
@@ -64,7 +63,10 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
 		}
 		acctOJ.Put("storage", storageOJ)
-		acctOJ.Put("code", stringToOJ(account.OriginalCode))
+		acctOJ.Put("code", byteArrayToOJ(account.Code))
+		if len(account.AsyncCallData) > 0 {
+			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
+		}
 
 		acctsOJ.Put(byteArrayToString(account.Address), acctOJ)
 	}
@@ -133,7 +135,9 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 	resultOJ.Put("out", &outOJ)
 
 	resultOJ.Put("status", intToOJ(res.Status))
-	resultOJ.Put("message", stringToOJ(res.Message))
+	if len(res.Message) > 0 {
+		resultOJ.Put("message", stringToOJ(res.Message))
+	}
 	resultOJ.Put("gas", uint64ToOJ(res.Gas))
 	if res.IgnoreLogs {
 		resultOJ.Put("logs", stringToOJ("*"))
@@ -217,8 +221,8 @@ func byteArrayToOJ(byteArray JSONBytes) oj.OJsonObject {
 	return &oj.OJsonString{Value: byteArrayToString(byteArray)}
 }
 
-func uint64ToOJ(i uint64) oj.OJsonObject {
-	return stringToOJ(fmt.Sprintf("%d", i))
+func uint64ToOJ(i JSONUint64) oj.OJsonObject {
+	return &oj.OJsonString{Value: i.Original}
 }
 
 func stringToOJ(str string) oj.OJsonObject {

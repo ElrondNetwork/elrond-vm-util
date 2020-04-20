@@ -17,6 +17,12 @@ type JSONBigInt struct {
 	Original string
 }
 
+// JSONUint64 stores the parsed uint64 value but also the original parsed string
+type JSONUint64 struct {
+	Value    uint64
+	Original string
+}
+
 // Account is a json object representing an account.
 type Account struct {
 	Address       JSONBytes
@@ -24,7 +30,6 @@ type Account struct {
 	Balance       JSONBigInt
 	Storage       []*StorageKeyValuePair
 	Code          JSONBytes
-	OriginalCode  string
 	AsyncCallData string
 }
 
@@ -36,7 +41,7 @@ type StorageKeyValuePair struct {
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {
-	Nonce     uint64
+	Nonce     JSONUint64
 	Value     JSONBigInt
 	IsCreate  bool
 	From      JSONBytes
@@ -44,8 +49,8 @@ type Transaction struct {
 	Function  string
 	Code      JSONBytes
 	Arguments []JSONBytes
-	GasPrice  uint64
-	GasLimit  uint64
+	GasPrice  JSONUint64
+	GasLimit  JSONUint64
 }
 
 // TransactionResult is a json object representing an expected transaction result.
@@ -54,7 +59,7 @@ type TransactionResult struct {
 	Status     JSONBigInt
 	Message    string
 	CheckGas   bool
-	Gas        uint64
+	Gas        JSONUint64
 	Refund     JSONBigInt
 	IgnoreLogs bool
 	LogHash    string

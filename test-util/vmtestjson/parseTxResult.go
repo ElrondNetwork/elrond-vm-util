@@ -35,10 +35,10 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 		case "gas":
 			if isStar(kvp.Value) {
 				blr.CheckGas = false
-				blr.Gas = 0
+				blr.Gas = JSONUint64{Value: 0, Original: "*"}
 			} else {
 				blr.CheckGas = true
-				blr.Gas, err = p.parseUint64(kvp.Value)
+				blr.Gas, err = p.processUint64(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid block result gas: %w", err)
 				}

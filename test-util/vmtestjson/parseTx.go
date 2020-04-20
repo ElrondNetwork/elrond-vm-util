@@ -19,7 +19,7 @@ func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
 
 		switch kvp.Key {
 		case "nonce":
-			blt.Nonce, err = p.parseUint64(kvp.Value)
+			blt.Nonce, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction nonce: %w", err)
 			}
@@ -71,12 +71,12 @@ func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
 				return nil, fmt.Errorf("invalid block transaction contract code: %w", err)
 			}
 		case "gasPrice":
-			blt.GasPrice, err = p.parseUint64(kvp.Value)
+			blt.GasPrice, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction gasPrice: %w", err)
 			}
 		case "gasLimit":
-			blt.GasLimit, err = p.parseUint64(kvp.Value)
+			blt.GasLimit, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction gasLimit: %w", err)
 			}

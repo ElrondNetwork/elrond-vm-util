@@ -85,7 +85,7 @@ func (p *Parser) processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {
 				return nil, fmt.Errorf("invalid block header difficulty: %w", err)
 			}
 		case "timestamp":
-			blh.Timestamp, err = p.parseUint64(kvp.Value)
+			blh.Timestamp, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block header timestamp: %w", err)
 			}

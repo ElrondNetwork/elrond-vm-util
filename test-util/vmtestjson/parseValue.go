@@ -42,17 +42,17 @@ func (p *Parser) parseBigInt(strRaw string, format bigIntParseFormat) (*big.Int,
 	}
 }
 
-func (p *Parser) parseUint64(obj oj.OJsonObject) (uint64, error) {
+func (p *Parser) processUint64(obj oj.OJsonObject) (JSONUint64, error) {
 	bi, err := p.processBigInt(obj, bigIntUnsignedBytes)
 	if err != nil {
-		return 0, err
+		return JSONUint64{}, err
 	}
 
 	if bi.Value == nil || !bi.Value.IsUint64() {
-		return 0, errors.New("value is not uint64")
+		return JSONUint64{}, errors.New("value is not uint64")
 	}
 
-	return bi.Value.Uint64(), nil
+	return JSONUint64{Value: bi.Value.Uint64(), Original: bi.Original}, nil
 }
 
 func (p *Parser) parseString(obj oj.OJsonObject) (string, error) {

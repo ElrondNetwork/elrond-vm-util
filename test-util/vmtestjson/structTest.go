@@ -24,5 +24,5 @@ type BlockHeader struct {
 	Difficulty  JSONBigInt
 	Number      JSONBigInt
 	GasLimit    JSONBigInt
-	Timestamp   uint64
+	Timestamp   JSONUint64
 }
