@@ -7,14 +7,14 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-// ToJSONString converts a test object to its JSON representation.
-func ToJSONString(testTopLevel []*Test) string {
-	jobj := ToOrderedJSON(testTopLevel)
+// TestToJSONString converts a test object to its JSON representation.
+func TestToJSONString(testTopLevel []*Test) string {
+	jobj := TestToOrderedJSON(testTopLevel)
 	return oj.JSONString(jobj)
 }
 
-// ToOrderedJSON converts a test object to an ordered JSON object.
-func ToOrderedJSON(testTopLevel []*Test) oj.OJsonObject {
+// TestToOrderedJSON converts a test object to an ordered JSON object.
+func TestToOrderedJSON(testTopLevel []*Test) oj.OJsonObject {
 	result := oj.NewMap()
 	for _, test := range testTopLevel {
 		result.Put(test.TestName, testToOJ(test))
