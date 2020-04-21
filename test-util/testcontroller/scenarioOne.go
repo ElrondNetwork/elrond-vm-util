@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
 // RunSingleJSONScenario parses and prepares test, then calls testCallback.
@@ -37,4 +39,19 @@ func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string) error {
 	}
 
 	return r.Executor.Run(scenario)
+}
+
+// tool to modify scenarios
+// use with extreme caution
+func saveModifiedScenario(toPath string, scenario *ij.Scenario) {
+	resultJSON := ij.ScenarioToJSONString(scenario)
+
+	err := os.MkdirAll(filepath.Dir(toPath), os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	err = ioutil.WriteFile(toPath, []byte(resultJSON), 0644)
+	if err != nil {
+		panic(err)
+	}
 }

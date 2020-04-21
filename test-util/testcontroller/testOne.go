@@ -50,7 +50,7 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 }
 
 // tool to convert .test.json -> .scen.json
-// use with caution
+// use with extreme caution
 func convertTestToScenario(contextPath string, top []*ij.Test) {
 	if strings.HasSuffix(contextPath, ".test.json") {
 		scenario, err := ij.ConvertTestToScenario(top)
