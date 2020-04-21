@@ -60,7 +60,6 @@ type TransactionResult struct {
 	Out        []JSONBytes
 	Status     JSONBigInt
 	Message    string
-	CheckGas   bool
 	Gas        JSONUint64
 	Refund     JSONBigInt
 	IgnoreLogs bool

@@ -33,7 +33,6 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}
 		case "gas":
-			blr.CheckGas = true
 			blr.Gas, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result gas: %w", err)

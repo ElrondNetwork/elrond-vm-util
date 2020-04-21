@@ -52,7 +52,6 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 	if len(res.Message) > 0 {
 		resultOJ.Put("message", stringToOJ(res.Message))
 	}
-	resultOJ.Put("gas", uint64ToOJ(res.Gas))
 	if res.IgnoreLogs {
 		resultOJ.Put("logs", stringToOJ("*"))
 	} else {
@@ -62,6 +61,7 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 			resultOJ.Put("logs", logsToOJ(res.Logs))
 		}
 	}
+	resultOJ.Put("gas", uint64ToOJ(res.Gas))
 	resultOJ.Put("refund", intToOJ(res.Refund))
 
 	return resultOJ
