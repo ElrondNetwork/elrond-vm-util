@@ -8,11 +8,13 @@ type VMScenarioExecutor interface {
 	Run(*ij.Scenario) error
 }
 
+// ScenarioRunner is a component that can run json scenarios, using a provided executor.
 type ScenarioRunner struct {
 	Executor VMScenarioExecutor
 	Parser   ij.Parser
 }
 
+// NewScenarioRunner creates new ScenarioRunner instance.
 func NewScenarioRunner(executor VMScenarioExecutor, fileResolver ij.FileResolver) *ScenarioRunner {
 	return &ScenarioRunner{
 		Executor: executor,
