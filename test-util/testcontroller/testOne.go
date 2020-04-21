@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
@@ -46,6 +47,29 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 	}
 
 	return nil
+}
+
+// tool to convert .test.json -> .scen.json
+// use with caution
+func convertTestToScenario(contextPath string, top []*ij.Test) {
+	if strings.HasSuffix(contextPath, ".test.json") {
+		scenario, err := ij.ConvertTestToScenario(top)
+		if err != nil {
+			panic(err)
+		}
+		scenarioSerialized := ij.ScenarioToJSONString(scenario)
+
+		newPath := contextPath[:len(contextPath)-len(".test.json")] + ".scen.json"
+		err = os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+
+		err = ioutil.WriteFile(newPath, []byte(scenarioSerialized), 0644)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 // tool to modify tests
