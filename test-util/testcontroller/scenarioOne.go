@@ -38,7 +38,7 @@ func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string) error {
 		return parseErr
 	}
 
-	return r.Executor.Run(scenario)
+	return r.Executor.ExecuteScenario(scenario)
 }
 
 // tool to modify scenarios

@@ -40,7 +40,7 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 	}
 
 	for _, test := range top {
-		testErr := r.Executor.Run(test)
+		testErr := r.Executor.ExecuteTest(test)
 		if testErr != nil {
 			return testErr
 		}
