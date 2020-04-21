@@ -38,7 +38,9 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
 			stepOJ.Put("accounts", accountsToOJ(step.Accounts))
-			stepOJ.Put("blockhashes", blockHashesToOJ(step.BlockHashes))
+			if len(step.BlockHashes) > 0 {
+				stepOJ.Put("blockhashes", blockHashesToOJ(step.BlockHashes))
+			}
 		case *CheckStateStep:
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
