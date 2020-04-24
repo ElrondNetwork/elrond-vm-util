@@ -34,7 +34,6 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
-
 		case "balance":
 			acct.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {

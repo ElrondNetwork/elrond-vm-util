@@ -38,6 +38,9 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
 			stepOJ.Put("accounts", accountsToOJ(step.Accounts))
+			if len(step.NewAddressMocks) > 0 {
+				stepOJ.Put("newAddresses", newAddressMocksToOJ(step.NewAddressMocks))
+			}
 			if len(step.BlockHashes) > 0 {
 				stepOJ.Put("blockhashes", blockHashesToOJ(step.BlockHashes))
 			}
@@ -85,4 +88,17 @@ func transactionToScenarioOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 
 	return transactionOJ
+}
+
+func newAddressMocksToOJ(newAddressMocks []*NewAddressMock) oj.OJsonObject {
+	var namList []oj.OJsonObject
+	for _, namEntry := range newAddressMocks {
+		namOJ := oj.NewMap()
+		namOJ.Put("creatorAddress", byteArrayToOJ(namEntry.CreatorAddress))
+		namOJ.Put("creatorNonce", uint64ToOJ(namEntry.CreatorNonce))
+		namOJ.Put("newAddress", byteArrayToOJ(namEntry.NewAddress))
+		namList = append(namList, namOJ)
+	}
+	namOJList := oj.OJsonList(namList)
+	return &namOJList
 }

@@ -13,11 +13,19 @@ type Step interface {
 	StepTypeName() string
 }
 
+// NewAddressMock allows tests to specify what new addresses to generate
+type NewAddressMock struct {
+	CreatorAddress JSONBytes
+	CreatorNonce   JSONUint64
+	NewAddress     JSONBytes
+}
+
 // SetStateStep is a step where data is saved to the blockchain mock.
 type SetStateStep struct {
-	Comment     string
-	Accounts    []*Account
-	BlockHashes []JSONBytes
+	Comment         string
+	Accounts        []*Account
+	BlockHashes     []JSONBytes
+	NewAddressMocks []*NewAddressMock
 }
 
 // CheckStateStep is a step where the state of the blockchain mock is verified.

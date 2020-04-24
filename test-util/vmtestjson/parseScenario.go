@@ -103,6 +103,11 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 				if err != nil {
 					return nil, fmt.Errorf("cannot parse set state step: %w", err)
 				}
+			case "newAddresses":
+				step.NewAddressMocks, err = p.processNewAddressMocks(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing new addresses: %w", err)
+				}
 			case "blockhashes":
 				step.BlockHashes, err = p.parseByteArrayList(kvp.Value)
 				if err != nil {
