@@ -11,6 +11,9 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
+const filePrefix = "file:"
+const keccak256Prefix = "keccak256:"
+
 func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (JSONBytes, error) {
 	strVal, err := p.parseString(obj)
 	if err != nil {
@@ -26,6 +29,48 @@ func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (JSONBytes, erro
 func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	if len(strRaw) == 0 {
 		return []byte{}, nil
+	}
+
+	// file contents
+	// TODO: make this part of a proper parser
+	if strings.HasPrefix(strRaw, filePrefix) {
+		if p.FileResolver == nil {
+			return []byte{}, errors.New("parser FileResolver not provided")
+		}
+		fileContents, err := p.FileResolver.ResolveFileValue(strRaw[len(filePrefix):])
+		if err != nil {
+			return []byte{}, err
+		}
+		return fileContents, nil
+	}
+
+	// keccak256
+	// TODO: make this part of a proper parser
+	if strings.HasPrefix(strRaw, keccak256Prefix) {
+		arg, err := p.parseAnyValueAsByteArray(strRaw[len(keccak256Prefix):])
+		if err != nil {
+			return []byte{}, fmt.Errorf("cannot parse keccak256 argument: %w", err)
+		}
+		hash, err := keccak256(arg)
+		if err != nil {
+			return []byte{}, fmt.Errorf("error computing keccak256: %w", err)
+		}
+		return hash, nil
+	}
+
+	// concatenate values of different formats
+	// TODO: make this part of a proper parser
+	parts := strings.Split(strRaw, "|")
+	if len(parts) > 1 {
+		concat := make([]byte, 0)
+		for _, part := range parts {
+			eval, err := p.parseAnyValueAsByteArray(part)
+			if err != nil {
+				return []byte{}, err
+			}
+			concat = append(concat, eval...)
+		}
+		return concat, nil
 	}
 
 	if strRaw == "false" {
@@ -62,18 +107,6 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
 	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
-
-	// file contents
-	if strings.HasPrefix(strRaw, "file:") {
-		if p.FileResolver == nil {
-			return []byte{}, errors.New("parser FileResolver not provided")
-		}
-		fileContents, err := p.FileResolver.ResolveFileValue(strRaw[5:])
-		if err != nil {
-			return []byte{}, err
-		}
-		return fileContents, nil
-	}
 
 	// hex, the usual representation
 	if strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X") {
