@@ -12,7 +12,29 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 	for _, account := range accounts {
 		acctOJ := oj.NewMap()
 		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
-		acctOJ.Put("balance", intToOJ(account.Balance))
+		acctOJ.Put("balance", bigIntToOJ(account.Balance))
+		storageOJ := oj.NewMap()
+		for _, st := range account.Storage {
+			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
+		}
+		acctOJ.Put("storage", storageOJ)
+		acctOJ.Put("code", byteArrayToOJ(account.Code))
+		if len(account.AsyncCallData) > 0 {
+			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
+		}
+
+		acctsOJ.Put(byteArrayToString(account.Address), acctOJ)
+	}
+
+	return acctsOJ
+}
+
+func checkAccountsToOJ(accounts []*CheckAccount) oj.OJsonObject {
+	acctsOJ := oj.NewMap()
+	for _, account := range accounts {
+		acctOJ := oj.NewMap()
+		acctOJ.Put("nonce", checkUint64ToOJ(account.Nonce))
+		acctOJ.Put("balance", checkBigIntToOJ(account.Balance))
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
 			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
@@ -48,7 +70,7 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 	outOJ := oj.OJsonList(outList)
 	resultOJ.Put("out", &outOJ)
 
-	resultOJ.Put("status", intToOJ(res.Status))
+	resultOJ.Put("status", bigIntToOJ(res.Status))
 	if len(res.Message) > 0 {
 		resultOJ.Put("message", stringToOJ(res.Message))
 	}
@@ -61,8 +83,8 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 			resultOJ.Put("logs", logsToOJ(res.Logs))
 		}
 	}
-	resultOJ.Put("gas", uint64ToOJ(res.Gas))
-	resultOJ.Put("refund", intToOJ(res.Refund))
+	resultOJ.Put("gas", checkUint64ToOJ(res.Gas))
+	resultOJ.Put("refund", checkBigIntToOJ(res.Refund))
 
 	return resultOJ
 }
@@ -123,7 +145,11 @@ func intToString(i *big.Int) string {
 	return str
 }
 
-func intToOJ(i JSONBigInt) oj.OJsonObject {
+func bigIntToOJ(i JSONBigInt) oj.OJsonObject {
+	return &oj.OJsonString{Value: i.Original}
+}
+
+func checkBigIntToOJ(i JSONCheckBigInt) oj.OJsonObject {
 	return &oj.OJsonString{Value: i.Original}
 }
 
@@ -139,6 +165,10 @@ func byteArrayToOJ(byteArray JSONBytes) oj.OJsonObject {
 }
 
 func uint64ToOJ(i JSONUint64) oj.OJsonObject {
+	return &oj.OJsonString{Value: i.Original}
+}
+
+func checkUint64ToOJ(i JSONCheckUint64) oj.OJsonObject {
 	return &oj.OJsonString{Value: i.Original}
 }
 

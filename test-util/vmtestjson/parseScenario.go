@@ -129,7 +129,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 					return nil, fmt.Errorf("bad check state step comment: %w", err)
 				}
 			case "accounts":
-				step.CheckAccounts, err = p.processAccountMap(kvp.Value)
+				step.CheckAccounts, err = p.processCheckAccountMap(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("cannot parse check state step: %w", err)
 				}

@@ -38,7 +38,7 @@ func testToOJ(test *Test) oj.OJsonObject {
 	testOJ.Put("blocks", &blocksOJ)
 	testOJ.Put("network", stringToOJ(test.Network))
 	testOJ.Put("blockhashes", blockHashesToOJ(test.BlockHashes))
-	testOJ.Put("postState", accountsToOJ(test.PostState))
+	testOJ.Put("postState", checkAccountsToOJ(test.PostState))
 	return testOJ
 }
 
@@ -47,7 +47,7 @@ func transactionToTestOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ.Put("nonce", uint64ToOJ(tx.Nonce))
 	transactionOJ.Put("function", stringToOJ(tx.Function))
 	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
-	transactionOJ.Put("value", intToOJ(tx.Value))
+	transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	transactionOJ.Put("to", byteArrayToOJ(tx.To))
 
 	var argList []oj.OJsonObject
@@ -82,11 +82,11 @@ func blockToOJ(block *Block) oj.OJsonObject {
 	blockOJ.Put("transactions", &txsOJ)
 
 	blockHeaderOJ := oj.NewMap()
-	blockHeaderOJ.Put("gasLimit", intToOJ(block.BlockHeader.GasLimit))
-	blockHeaderOJ.Put("number", intToOJ(block.BlockHeader.Number))
-	blockHeaderOJ.Put("difficulty", intToOJ(block.BlockHeader.Difficulty))
+	blockHeaderOJ.Put("gasLimit", bigIntToOJ(block.BlockHeader.GasLimit))
+	blockHeaderOJ.Put("number", bigIntToOJ(block.BlockHeader.Number))
+	blockHeaderOJ.Put("difficulty", bigIntToOJ(block.BlockHeader.Difficulty))
 	blockHeaderOJ.Put("timestamp", uint64ToOJ(block.BlockHeader.Timestamp))
-	blockHeaderOJ.Put("coinbase", intToOJ(block.BlockHeader.Beneficiary))
+	blockHeaderOJ.Put("coinbase", bigIntToOJ(block.BlockHeader.Beneficiary))
 	blockOJ.Put("blockHeader", blockHeaderOJ)
 
 	return blockOJ

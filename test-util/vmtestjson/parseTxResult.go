@@ -32,11 +32,6 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}
-		case "gas":
-			blr.Gas, err = p.processUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid block result gas: %w", err)
-			}
 		case "logs":
 			if isStar(kvp.Value) {
 				blr.IgnoreLogs = true
@@ -51,8 +46,13 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*TransactionRes
 					}
 				}
 			}
+		case "gas":
+			blr.Gas, err = p.processCheckUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid block result gas: %w", err)
+			}
 		case "refund":
-			blr.Refund, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			blr.Refund, err = p.processCheckBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result refund: %w", err)
 			}

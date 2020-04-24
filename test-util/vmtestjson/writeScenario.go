@@ -48,7 +48,7 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
-			stepOJ.Put("accounts", accountsToOJ(step.CheckAccounts))
+			stepOJ.Put("accounts", checkAccountsToOJ(step.CheckAccounts))
 		case *TxStep:
 			if len(step.TxIdent) > 0 {
 				stepOJ.Put("txId", stringToOJ(step.TxIdent))
@@ -73,7 +73,7 @@ func transactionToScenarioOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ := oj.NewMap()
 	transactionOJ.Put("from", byteArrayToOJ(tx.From))
 	transactionOJ.Put("to", byteArrayToOJ(tx.To))
-	transactionOJ.Put("value", intToOJ(tx.Value))
+	transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	transactionOJ.Put("function", stringToOJ(tx.Function))
 	transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
 

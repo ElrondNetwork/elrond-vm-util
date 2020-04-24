@@ -77,7 +77,7 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 				return nil, fmt.Errorf("unmarshalled blockHashes object is not a list: %w", err)
 			}
 		case "postState":
-			test.PostState, err = p.processAccountMap(kvp.Value)
+			test.PostState, err = p.processCheckAccountMap(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("cannot parse postState: %w", err)
 			}

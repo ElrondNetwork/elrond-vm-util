@@ -31,7 +31,7 @@ type SetStateStep struct {
 // CheckStateStep is a step where the state of the blockchain mock is verified.
 type CheckStateStep struct {
 	Comment       string
-	CheckAccounts []*Account
+	CheckAccounts []*CheckAccount
 }
 
 // TxStep is a step where a transaction is executed.

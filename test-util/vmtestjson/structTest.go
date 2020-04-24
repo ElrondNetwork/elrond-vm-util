@@ -8,7 +8,7 @@ type Test struct {
 	Blocks      []*Block
 	Network     string
 	BlockHashes []JSONBytes
-	PostState   []*Account
+	PostState   []*CheckAccount
 }
 
 // Block is a json object representing a block.

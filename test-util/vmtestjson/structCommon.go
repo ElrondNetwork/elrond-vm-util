@@ -2,34 +2,23 @@ package vmtestjson
 
 import (
 	"bytes"
-	"math/big"
 )
-
-// JSONBytes stores the parsed byte slice value but also the original parsed string
-type JSONBytes struct {
-	Value    []byte
-	Original string
-}
-
-// JSONBigInt stores the parsed big int value but also the original parsed string
-type JSONBigInt struct {
-	Value    *big.Int
-	IsStar   bool
-	Original string
-}
-
-// JSONUint64 stores the parsed uint64 value but also the original parsed string
-type JSONUint64 struct {
-	Value    uint64
-	IsStar   bool
-	Original string
-}
 
 // Account is a json object representing an account.
 type Account struct {
 	Address       JSONBytes
 	Nonce         JSONUint64
 	Balance       JSONBigInt
+	Storage       []*StorageKeyValuePair
+	Code          JSONBytes
+	AsyncCallData string
+}
+
+// CheckAccount is a json object representing checks for an account.
+type CheckAccount struct {
+	Address       JSONBytes
+	Nonce         JSONCheckUint64
+	Balance       JSONCheckBigInt
 	Storage       []*StorageKeyValuePair
 	Code          JSONBytes
 	AsyncCallData string
@@ -60,8 +49,8 @@ type TransactionResult struct {
 	Out        []JSONBytes
 	Status     JSONBigInt
 	Message    string
-	Gas        JSONUint64
-	Refund     JSONBigInt
+	Gas        JSONCheckUint64
+	Refund     JSONCheckBigInt
 	IgnoreLogs bool
 	LogHash    string
 	Logs       []*LogEntry
@@ -77,6 +66,16 @@ type LogEntry struct {
 
 // FindAccount searches an account list by address.
 func FindAccount(accounts []*Account, address []byte) *Account {
+	for _, acct := range accounts {
+		if bytes.Equal(acct.Address.Value, address) {
+			return acct
+		}
+	}
+	return nil
+}
+
+// FindCheckAccount searches a check account list by address.
+func FindCheckAccount(accounts []*CheckAccount, address []byte) *CheckAccount {
 	for _, acct := range accounts {
 		if bytes.Equal(acct.Address.Value, address) {
 			return acct
