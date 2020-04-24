@@ -6,6 +6,7 @@ type BlockchainHookMock struct {
 	CurrentTimestamp             uint64
 	Blockhashes                  [][]byte
 	mockAddressGenerationEnabled bool
+	NewAddressMocks              []*NewAddressMock
 }
 
 // NewMock creates a new mock instance

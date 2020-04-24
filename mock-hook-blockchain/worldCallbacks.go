@@ -1,6 +1,7 @@
 package callbackblockchain
 
 import (
+	"bytes"
 	"errors"
 	"math/big"
 
@@ -22,6 +23,14 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 
 // NewAddress adapts between K model and elrond function
 func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+	// explicit new address mocks
+	for _, newAddressMock := range b.NewAddressMocks {
+		if bytes.Equal(creatorAddress, newAddressMock.CreatorAddress) && creatorNonce == newAddressMock.CreatorNonce {
+			return newAddressMock.NewAddress, nil
+		}
+	}
+
+	// a simple mock algorithm
 	if b.mockAddressGenerationEnabled {
 		result := make([]byte, 32)
 		result[10] = 0x11
