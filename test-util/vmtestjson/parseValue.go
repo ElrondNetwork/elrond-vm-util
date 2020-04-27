@@ -11,8 +11,8 @@ import (
 type bigIntParseFormat int
 
 const (
-	bigIntSignedBytes   = iota
-	bigIntUnsignedBytes = iota
+	bigIntSignedBytes bigIntParseFormat = iota
+	bigIntUnsignedBytes
 )
 
 func (p *Parser) processCheckBigInt(obj oj.OJsonObject, format bigIntParseFormat) (JSONCheckBigInt, error) {

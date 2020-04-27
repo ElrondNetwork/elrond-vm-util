@@ -34,7 +34,17 @@ func (p *Parser) processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 				return nil, errors.New("unmarshalled block transactions object is not a list")
 			}
 			for _, trRaw := range transactionsRaw.AsList() {
-				tr, trErr := p.processTx(trRaw)
+				var txType TransactionType
+				isCreate, err := p.txIsCreate(trRaw)
+				if err != nil {
+					return nil, err
+				}
+				if isCreate {
+					txType = ScDeploy
+				} else {
+					txType = ScCall
+				}
+				tr, trErr := p.processTx(txType, trRaw)
 				if trErr != nil {
 					return nil, trErr
 				}
@@ -56,6 +66,25 @@ func (p *Parser) processBlock(blockRaw oj.OJsonObject) (*Block, error) {
 	}
 
 	return &bl, nil
+}
+
+// for old tests the only way to tell if it is a deploy or not is by checkong the "to" field, deploys have empty "to"
+func (p *Parser) txIsCreate(txRaw oj.OJsonObject) (bool, error) {
+	txRawMap, isMap := txRaw.(*oj.OJsonMap)
+	if !isMap {
+		return false, errors.New("unmarshalled block transaction is not a map")
+	}
+	for _, kvp := range txRawMap.OrderedKV {
+		switch kvp.Key {
+		case "to":
+			toStr, err := p.parseString(kvp.Value)
+			if err != nil {
+				return false, fmt.Errorf("invalid block transaction to: %w", err)
+			}
+			return len(toStr) == 0, nil
+		}
+	}
+	return false, nil
 }
 
 func (p *Parser) processBlockHeader(blhRaw interface{}) (*BlockHeader, error) {

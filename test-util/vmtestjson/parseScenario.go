@@ -138,37 +138,46 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 			}
 		}
 		return step, nil
-	case stepNameTx:
-		step := &TxStep{}
-		for _, kvp := range stepMap.OrderedKV {
-			switch kvp.Key {
-			case "step":
-			case "txId":
-				step.TxIdent, err = p.parseString(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("bad tx step id: %w", err)
-				}
-			case "comment":
-				step.Comment, err = p.parseString(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("bad tx step comment: %w", err)
-				}
-			case "tx":
-				step.Tx, err = p.processTx(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("cannot parse tx step transaction: %w", err)
-				}
-			case "expect":
-				step.ExpectedResult, err = p.processTxExpectedResult(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("cannot parse tx expected result: %w", err)
-				}
-			default:
-				return nil, fmt.Errorf("invalid tx step field: %s", kvp.Key)
-			}
-		}
-		return step, nil
+	case stepNameScCall:
+		return p.parseTxStep(ScCall, stepMap)
+	case stepNameScDeploy:
+		return p.parseTxStep(ScDeploy, stepMap)
+	case stepNameTransfer:
+		return p.parseTxStep(Transfer, stepMap)
 	default:
 		return nil, fmt.Errorf("unknown step type: %s", step)
 	}
+}
+
+func (p *Parser) parseTxStep(txType TransactionType, stepMap *oj.OJsonMap) (*TxStep, error) {
+	step := &TxStep{}
+	var err error
+	for _, kvp := range stepMap.OrderedKV {
+		switch kvp.Key {
+		case "step":
+		case "txId":
+			step.TxIdent, err = p.parseString(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("bad tx step id: %w", err)
+			}
+		case "comment":
+			step.Comment, err = p.parseString(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("bad tx step comment: %w", err)
+			}
+		case "tx":
+			step.Tx, err = p.processTx(txType, kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("cannot parse tx step transaction: %w", err)
+			}
+		case "expect":
+			step.ExpectedResult, err = p.processTxExpectedResult(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("cannot parse tx expected result: %w", err)
+			}
+		default:
+			return nil, fmt.Errorf("invalid tx step field: %s", kvp.Key)
+		}
+	}
+	return step, nil
 }

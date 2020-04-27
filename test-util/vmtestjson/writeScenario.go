@@ -72,17 +72,25 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 func transactionToScenarioOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ := oj.NewMap()
 	transactionOJ.Put("from", byteArrayToOJ(tx.From))
-	transactionOJ.Put("to", byteArrayToOJ(tx.To))
-	transactionOJ.Put("value", bigIntToOJ(tx.Value))
-	transactionOJ.Put("function", stringToOJ(tx.Function))
-	transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
-
-	var argList []oj.OJsonObject
-	for _, arg := range tx.Arguments {
-		argList = append(argList, byteArrayToOJ(arg))
+	if tx.Type == ScCall || tx.Type == Transfer {
+		transactionOJ.Put("to", byteArrayToOJ(tx.To))
 	}
-	argOJ := oj.OJsonList(argList)
-	transactionOJ.Put("arguments", &argOJ)
+	transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	if tx.Type == ScCall {
+		transactionOJ.Put("function", stringToOJ(tx.Function))
+	}
+	if tx.Type == ScDeploy {
+		transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
+	}
+
+	if tx.Type == ScCall || tx.Type == ScDeploy {
+		var argList []oj.OJsonObject
+		for _, arg := range tx.Arguments {
+			argList = append(argList, byteArrayToOJ(arg))
+		}
+		argOJ := oj.OJsonList(argList)
+		transactionOJ.Put("arguments", &argOJ)
+	}
 
 	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
 	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))

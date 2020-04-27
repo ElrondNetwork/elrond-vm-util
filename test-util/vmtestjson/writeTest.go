@@ -57,7 +57,9 @@ func transactionToTestOJ(tx *Transaction) oj.OJsonObject {
 	argOJ := oj.OJsonList(argList)
 	transactionOJ.Put("arguments", &argOJ)
 
-	transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
+	if len(tx.Code.Original) > 0 {
+		transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
+	}
 	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	transactionOJ.Put("from", byteArrayToOJ(tx.From))
 

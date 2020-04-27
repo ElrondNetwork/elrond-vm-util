@@ -60,9 +60,20 @@ func (*CheckStateStep) StepTypeName() string {
 	return stepNameCheckState
 }
 
-const stepNameTx = "tx"
+const stepNameScCall = "scCall"
+const stepNameScDeploy = "scDeploy"
+const stepNameTransfer = "transfer"
 
 // StepTypeName type as string
-func (*TxStep) StepTypeName() string {
-	return stepNameTx
+func (t *TxStep) StepTypeName() string {
+	switch t.Tx.Type {
+	case ScCall:
+		return stepNameScCall
+	case ScDeploy:
+		return stepNameScDeploy
+	case Transfer:
+		return stepNameTransfer
+	default:
+		panic("unknown TransactionType")
+	}
 }

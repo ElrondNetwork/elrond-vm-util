@@ -36,6 +36,13 @@
                         ],
                         "gas": "0x0f7b9d",
                         "refund": ""
+                    },
+                    {
+                        "out": [],
+                        "status": "",
+                        "logs": [],
+                        "gas": "*",
+                        "refund": ""
                     }
                 ],
                 "transactions": [
@@ -49,7 +56,20 @@
                             "0x1234123400000000000000000000000000000000000000000000000000000004",
                             "0x00"
                         ],
-                        "contractCode": "``cannot have both function and contract code at the same time but I am only testing the parser here",
+                        "gasPrice": "0x01",
+                        "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
+                    },
+                    {
+                        "nonce": "0x00",
+                        "function": "",
+                        "gasLimit": "0x100000",
+                        "value": "0x00",
+                        "to": "",
+                        "arguments": [
+                            "0x1234123400000000000000000000000000000000000000000000000000000004",
+                            "0x00"
+                        ],
+                        "contractCode": "``contract code to deploy",
                         "gasPrice": "0x01",
                         "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
                     }

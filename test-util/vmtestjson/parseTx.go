@@ -7,13 +7,13 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
+func (p *Parser) processTx(txType TransactionType, blrRaw oj.OJsonObject) (*Transaction, error) {
 	bltMap, isMap := blrRaw.(*oj.OJsonMap)
 	if !isMap {
 		return nil, errors.New("unmarshalled block transaction is not a map")
 	}
 
-	blt := Transaction{}
+	blt := Transaction{Type: txType}
 	var err error
 	for _, kvp := range bltMap.OrderedKV {
 
@@ -40,20 +40,26 @@ func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
 				return nil, fmt.Errorf("invalid block transaction to: %w", err)
 			}
 
-			// note "to": "0x00" has to yield isCreate=false, even though it parses to 0, just like the 2 cases below
-			blt.IsCreate = toStr == "" || toStr == "0x"
-
-			if !blt.IsCreate {
-				var toErr error
-				blt.To, toErr = p.parseAccountAddress(toStr)
-				if toErr != nil {
-					return nil, toErr
+			if txType == ScDeploy {
+				if len(toStr) > 0 {
+					return nil, errors.New("transaction to field not allowed for scDeploy transactions")
+				}
+			} else {
+				blt.To, err = p.parseAccountAddress(toStr)
+				if err != nil {
+					return nil, err
 				}
 			}
 		case "function":
 			blt.Function, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction function: %w", err)
+			}
+			if txType == ScDeploy && len(blt.Function) > 0 {
+				return nil, errors.New("transaction function field not allowed for scDeploy transactions")
+			}
+			if txType == Transfer && len(blt.Function) > 0 {
+				return nil, errors.New("transaction function field not allowed for transfer transactions")
 			}
 		case "value":
 			blt.Value, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
@@ -65,10 +71,16 @@ func (p *Parser) processTx(blrRaw oj.OJsonObject) (*Transaction, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction arguments: %w", err)
 			}
+			if txType == Transfer && len(blt.Arguments) > 0 {
+				return nil, errors.New("function arguments not allowed for transfer transactions")
+			}
 		case "contractCode":
 			blt.Code, err = p.processAnyValueAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction contract code: %w", err)
+			}
+			if txType != ScDeploy && len(blt.Code.Value) > 0 {
+				return nil, errors.New("transaction contractCode field only allowed int scDeploy transactions")
 			}
 		case "gasPrice":
 			blt.GasPrice, err = p.processUint64(kvp.Value)
