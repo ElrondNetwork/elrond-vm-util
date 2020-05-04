@@ -69,10 +69,10 @@ func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 
 // GetStorageData yields the storage value for a certain account and index.
 // Should return an empty byte array if the key is missing from the account storage
-func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
+func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte) (vmcommon.StorageData, error) {
 	acct := b.AcctMap.GetAccount(accountAddress)
 	if acct == nil {
-		return []byte{}, nil
+		return vmcommon.StorageData{Data: []byte{}}, nil
 	}
 	return acct.StorageValue(string(index)), nil
 }
