@@ -13,7 +13,7 @@ func defaultAccount(address []byte) *Account {
 		Address: address,
 		Nonce:   0,
 		Balance: zero,
-		Storage: make(map[string][]byte),
+		Storage: make(map[string]vmi.StorageData),
 		Code:    nil,
 	}
 }
@@ -84,7 +84,7 @@ func (b *BlockchainHookMock) UpdateAccounts(modifiedAccounts []*vmi.OutputAccoun
 		}
 
 		for _, stu := range modAcct.StorageUpdates {
-			acct.Storage[string(stu.Offset)] = stu.StorageData.Data
+			acct.Storage[string(stu.Offset)] = stu.StorageData
 		}
 	}
 
