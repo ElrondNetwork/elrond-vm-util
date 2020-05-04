@@ -162,8 +162,8 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 }
 
 // ProcessBuiltInFunction -
-func (b *BlockchainHookMock) ProcessBuiltInFunction(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	return &vmcommon.VMOutput{}, nil
+func (b *BlockchainHookMock) ProcessBuiltInFunction(_ *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	return big.NewInt(0), 0, nil
 }
 
 // GetBuiltinFunctionNames -
