@@ -22,7 +22,7 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 }
 
 // NewAddress adapts between K model and elrond function
-func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []byte) ([]byte, error) {
 	// explicit new address mocks
 	for _, newAddressMock := range b.NewAddressMocks {
 		if bytes.Equal(creatorAddress, newAddressMock.CreatorAddress) && creatorNonce == newAddressMock.CreatorNonce {
@@ -162,11 +162,16 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 }
 
 // ProcessBuiltInFunction -
-func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
-	return big.NewInt(0), 0, nil
+func (b *BlockchainHookMock) ProcessBuiltInFunction(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return &vmcommon.VMOutput{}, nil
 }
 
 // GetBuiltinFunctionNames -
 func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
+}
+
+// GetAllState -
+func (b *BlockchainHookMock) GetAllState(_ []byte) (map[string][]byte, error) {
+	return make(map[string][]byte), nil
 }
