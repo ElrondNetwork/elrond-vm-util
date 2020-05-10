@@ -71,7 +71,7 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*Test, error) {
 				return nil, fmt.Errorf("test network value not a string: %w", err)
 			}
 
-		case "blockhashes":
+		case "blockHashes":
 			test.BlockHashes, err = p.parseByteArrayList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshalled blockHashes object is not a list: %w", err)

@@ -30,10 +30,25 @@
                     "newAddress": "``creator_addr____________________"
                 }
             ],
-            "blockhashes": [
+            "blockHashes": [
                 "0x24a30e4305ac41674b26493c800c05f507e98d3b8bceb0a314f9b9bc43622736",
                 "0x00"
             ]
+        },
+        {
+            "step": "setState",
+            "comment": "only set block info this time",
+            "previousBlockInfo": {
+                "blockNonce": "222",
+                "blockRound": "333",
+                "blockEpoch": "444"
+            },
+            "currentBlockInfo": {
+                "blockTimestamp": "511",
+                "blockNonce": "522",
+                "blockRound": "533",
+                "blockEpoch": "544"
+            }
         },
         {
             "step": "scCall",

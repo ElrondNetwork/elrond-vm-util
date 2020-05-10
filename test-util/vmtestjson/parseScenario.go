@@ -108,7 +108,17 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 				if err != nil {
 					return nil, fmt.Errorf("error parsing new addresses: %w", err)
 				}
-			case "blockhashes":
+			case "previousBlockInfo":
+				step.PreviousBlockInfo, err = p.processBlockInfo(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing previousBlockInfo: %w", err)
+				}
+			case "currentBlockInfo":
+				step.CurrentBlockInfo, err = p.processBlockInfo(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing currentBlockInfo: %w", err)
+				}
+			case "blockHashes":
 				step.BlockHashes, err = p.parseByteArrayList(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing block hashes: %w", err)

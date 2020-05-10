@@ -37,12 +37,20 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
-			stepOJ.Put("accounts", accountsToOJ(step.Accounts))
+			if len(step.Accounts) > 0 {
+				stepOJ.Put("accounts", accountsToOJ(step.Accounts))
+			}
 			if len(step.NewAddressMocks) > 0 {
 				stepOJ.Put("newAddresses", newAddressMocksToOJ(step.NewAddressMocks))
 			}
+			if step.PreviousBlockInfo != nil {
+				stepOJ.Put("previousBlockInfo", blockInfoToOJ(step.PreviousBlockInfo))
+			}
+			if step.CurrentBlockInfo != nil {
+				stepOJ.Put("currentBlockInfo", blockInfoToOJ(step.CurrentBlockInfo))
+			}
 			if len(step.BlockHashes) > 0 {
-				stepOJ.Put("blockhashes", blockHashesToOJ(step.BlockHashes))
+				stepOJ.Put("blockHashes", blockHashesToOJ(step.BlockHashes))
 			}
 		case *CheckStateStep:
 			if len(step.Comment) > 0 {
@@ -109,4 +117,22 @@ func newAddressMocksToOJ(newAddressMocks []*NewAddressMock) oj.OJsonObject {
 	}
 	namOJList := oj.OJsonList(namList)
 	return &namOJList
+}
+
+func blockInfoToOJ(blockInfo *BlockInfo) oj.OJsonObject {
+	blockInfoOJ := oj.NewMap()
+	if len(blockInfo.BlockTimestamp.Original) > 0 {
+		blockInfoOJ.Put("blockTimestamp", uint64ToOJ(blockInfo.BlockTimestamp))
+	}
+	if len(blockInfo.BlockNonce.Original) > 0 {
+		blockInfoOJ.Put("blockNonce", uint64ToOJ(blockInfo.BlockNonce))
+	}
+	if len(blockInfo.BlockRound.Original) > 0 {
+		blockInfoOJ.Put("blockRound", uint64ToOJ(blockInfo.BlockRound))
+	}
+	if len(blockInfo.BlockEpoch.Original) > 0 {
+		blockInfoOJ.Put("blockEpoch", uint64ToOJ(blockInfo.BlockEpoch))
+	}
+
+	return blockInfoOJ
 }

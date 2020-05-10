@@ -20,12 +20,22 @@ type NewAddressMock struct {
 	NewAddress     JSONBytes
 }
 
+// BlockInfo contains data for the block info hooks
+type BlockInfo struct {
+	BlockTimestamp JSONUint64
+	BlockNonce     JSONUint64
+	BlockRound     JSONUint64
+	BlockEpoch     JSONUint64
+}
+
 // SetStateStep is a step where data is saved to the blockchain mock.
 type SetStateStep struct {
-	Comment         string
-	Accounts        []*Account
-	BlockHashes     []JSONBytes
-	NewAddressMocks []*NewAddressMock
+	Comment           string
+	Accounts          []*Account
+	PreviousBlockInfo *BlockInfo
+	CurrentBlockInfo  *BlockInfo
+	BlockHashes       []JSONBytes
+	NewAddressMocks   []*NewAddressMock
 }
 
 // CheckStateStep is a step where the state of the blockchain mock is verified.
