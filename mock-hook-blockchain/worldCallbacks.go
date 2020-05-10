@@ -108,17 +108,26 @@ func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
 
 // LastNonce returns the nonce from from the last committed block
 func (b *BlockchainHookMock) LastNonce() uint64 {
-	return 0
+	if b.PreviousBlockInfo == nil {
+		return 0
+	}
+	return b.PreviousBlockInfo.BlockNonce
 }
 
 // LastRound returns the round from the last committed block
 func (b *BlockchainHookMock) LastRound() uint64 {
-	return 0
+	if b.PreviousBlockInfo == nil {
+		return 0
+	}
+	return b.PreviousBlockInfo.BlockRound
 }
 
 // LastTimeStamp returns the timeStamp from the last committed block
 func (b *BlockchainHookMock) LastTimeStamp() uint64 {
-	return 0
+	if b.PreviousBlockInfo == nil {
+		return 0
+	}
+	return b.PreviousBlockInfo.BlockTimestamp
 }
 
 // LastRandomSeed returns the random seed from the last committed block
@@ -128,7 +137,10 @@ func (b *BlockchainHookMock) LastRandomSeed() []byte {
 
 // LastEpoch returns the epoch from the last committed block
 func (b *BlockchainHookMock) LastEpoch() uint32 {
-	return 0
+	if b.PreviousBlockInfo == nil {
+		return 0
+	}
+	return b.PreviousBlockInfo.BlockEpoch
 }
 
 // GetStateRootHash returns the state root hash from the last committed block
@@ -138,17 +150,26 @@ func (b *BlockchainHookMock) GetStateRootHash() []byte {
 
 // CurrentNonce returns the nonce from the current block
 func (b *BlockchainHookMock) CurrentNonce() uint64 {
-	return 0
+	if b.CurrentBlockInfo == nil {
+		return 0
+	}
+	return b.CurrentBlockInfo.BlockNonce
 }
 
 // CurrentRound returns the round from the current block
 func (b *BlockchainHookMock) CurrentRound() uint64 {
-	return 0
+	if b.CurrentBlockInfo == nil {
+		return 0
+	}
+	return b.CurrentBlockInfo.BlockRound
 }
 
 // CurrentTimeStamp return the timestamp from the current block
 func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
-	return b.CurrentTimestamp
+	if b.CurrentBlockInfo == nil {
+		return 0
+	}
+	return b.CurrentBlockInfo.BlockTimestamp
 }
 
 // CurrentRandomSeed returns the random seed from the current header
@@ -158,7 +179,10 @@ func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
 
 // CurrentEpoch returns the current epoch
 func (b *BlockchainHookMock) CurrentEpoch() uint32 {
-	return 0
+	if b.CurrentBlockInfo == nil {
+		return 0
+	}
+	return b.CurrentBlockInfo.BlockEpoch
 }
 
 // ProcessBuiltInFunction -

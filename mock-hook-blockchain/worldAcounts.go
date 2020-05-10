@@ -19,13 +19,6 @@ type Account struct {
 	AsyncCallData string
 }
 
-// NewAddressMock allows tests to specify what new addresses to generate
-type NewAddressMock struct {
-	CreatorAddress []byte
-	CreatorNonce   uint64
-	NewAddress     []byte
-}
-
 var storageDefaultValue = []byte{}
 
 // NewAccountMap creates a new AccountMap instance
