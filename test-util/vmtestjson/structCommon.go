@@ -40,9 +40,28 @@ const (
 	// ScCall describes a regular smart contract call
 	ScCall
 
-	// Transfer is an ERD transfer transaction without callin a smart contract
+	// Transfer is an ERD transfer transaction without calling a smart contract
 	Transfer
+
+	// ValidatorReward is when the protocol sends a validator reward to the target account.
+	// It increases the balance, but also increments "ELROND_Reward" in storage.
+	ValidatorReward
 )
+
+// HasSender is a helper function to indicate if transaction has `to` field.
+func (tt TransactionType) HasSender() bool {
+	return tt != ValidatorReward
+}
+
+// HasReceiver is a helper function to indicate if transaction has receiver.
+func (tt TransactionType) HasReceiver() bool {
+	return tt != ScDeploy
+}
+
+// IsSmartContractTx indicates whether tx type allows an `expect` field.
+func (tt TransactionType) IsSmartContractTx() bool {
+	return tt == ScDeploy || tt == ScCall
+}
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {

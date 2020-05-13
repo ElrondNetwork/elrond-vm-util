@@ -154,6 +154,8 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 		return p.parseTxStep(ScDeploy, stepMap)
 	case stepNameTransfer:
 		return p.parseTxStep(Transfer, stepMap)
+	case stepNameValidatorReward:
+		return p.parseTxStep(ValidatorReward, stepMap)
 	default:
 		return nil, fmt.Errorf("unknown step type: %s", step)
 	}
@@ -181,6 +183,9 @@ func (p *Parser) parseTxStep(txType TransactionType, stepMap *oj.OJsonMap) (*TxS
 				return nil, fmt.Errorf("cannot parse tx step transaction: %w", err)
 			}
 		case "expect":
+			if !step.Tx.Type.IsSmartContractTx() {
+				return nil, fmt.Errorf("no expected result allowed for step of type %s", step.StepTypeName())
+			}
 			step.ExpectedResult, err = p.processTxExpectedResult(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("cannot parse tx expected result: %w", err)

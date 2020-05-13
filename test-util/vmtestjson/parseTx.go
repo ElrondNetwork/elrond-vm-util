@@ -24,6 +24,9 @@ func (p *Parser) processTx(txType TransactionType, blrRaw oj.OJsonObject) (*Tran
 				return nil, fmt.Errorf("invalid block transaction nonce: %w", err)
 			}
 		case "from":
+			if !txType.HasSender() {
+				return nil, errors.New("`from` not allowed in transaction, it is always the zero address")
+			}
 			fromStr, err := p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction from: %w", err)

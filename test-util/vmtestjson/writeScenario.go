@@ -65,7 +65,9 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
 			stepOJ.Put("tx", transactionToScenarioOJ(step.Tx))
-			stepOJ.Put("expect", resultToOJ(step.ExpectedResult))
+			if step.Tx.Type.IsSmartContractTx() {
+				stepOJ.Put("expect", resultToOJ(step.ExpectedResult))
+			}
 		}
 
 		stepOJList = append(stepOJList, stepOJ)
@@ -79,8 +81,10 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 
 func transactionToScenarioOJ(tx *Transaction) oj.OJsonObject {
 	transactionOJ := oj.NewMap()
-	transactionOJ.Put("from", byteArrayToOJ(tx.From))
-	if tx.Type == ScCall || tx.Type == Transfer {
+	if tx.Type.HasSender() {
+		transactionOJ.Put("from", byteArrayToOJ(tx.From))
+	}
+	if tx.Type.HasReceiver() {
 		transactionOJ.Put("to", byteArrayToOJ(tx.To))
 	}
 	transactionOJ.Put("value", bigIntToOJ(tx.Value))
@@ -100,8 +104,10 @@ func transactionToScenarioOJ(tx *Transaction) oj.OJsonObject {
 		transactionOJ.Put("arguments", &argOJ)
 	}
 
-	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
-	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
+	if tx.Type.IsSmartContractTx() {
+		transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
+		transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
+	}
 
 	return transactionOJ
 }

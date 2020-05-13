@@ -73,6 +73,7 @@ func (*CheckStateStep) StepTypeName() string {
 const stepNameScCall = "scCall"
 const stepNameScDeploy = "scDeploy"
 const stepNameTransfer = "transfer"
+const stepNameValidatorReward = "validatorReward"
 
 // StepTypeName type as string
 func (t *TxStep) StepTypeName() string {
@@ -83,6 +84,8 @@ func (t *TxStep) StepTypeName() string {
 		return stepNameScDeploy
 	case Transfer:
 		return stepNameTransfer
+	case ValidatorReward:
+		return stepNameValidatorReward
 	default:
 		panic("unknown TransactionType")
 	}
