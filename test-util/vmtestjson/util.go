@@ -35,3 +35,15 @@ func JSONBytesValues(jbs []JSONBytes) [][]byte {
 	}
 	return result
 }
+
+// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
+func JSONCheckBytesString(jcbs []JSONCheckBytes) string {
+	str := "["
+	for i, jcb := range jcbs {
+		if i > 0 {
+			str += ", "
+		}
+		str += "\"" + jcb.Original + "\""
+	}
+	return str + "]"
+}
