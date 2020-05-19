@@ -68,6 +68,17 @@ func (p *Parser) processScenarioStepList(obj interface{}) ([]Step, error) {
 	return stepList, nil
 }
 
+// ParseScenarioStep parses a single scenario step, instead of an entire file.
+// Handy for tests, where step snippets can be embedded in code.
+func (p *Parser) ParseScenarioStep(jsonSnippet string) (Step, error) {
+	jobj, err := oj.ParseOrderedJSON([]byte(jsonSnippet))
+	if err != nil {
+		return nil, err
+	}
+
+	return p.processScenarioStep(jobj)
+}
+
 func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 	stepMap, isStepMap := stepObj.(*oj.OJsonMap)
 	if !isStepMap {
