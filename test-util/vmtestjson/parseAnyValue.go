@@ -82,7 +82,7 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	}
 
 	// allow ascii strings, for readability
-	if strings.HasPrefix(strRaw, "``") {
+	if strings.HasPrefix(strRaw, "``") || strings.HasPrefix(strRaw, "''") {
 		str := strRaw[2:]
 		return []byte(str), nil
 	}
