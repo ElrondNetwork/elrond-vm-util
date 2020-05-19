@@ -65,7 +65,7 @@ func resultToOJ(res *TransactionResult) oj.OJsonObject {
 
 	var outList []oj.OJsonObject
 	for _, out := range res.Out {
-		outList = append(outList, byteArrayToOJ(out))
+		outList = append(outList, checkBytesToOJ(out))
 	}
 	outOJ := oj.OJsonList(outList)
 	resultOJ.Put("out", &outOJ)
@@ -162,6 +162,17 @@ func byteArrayToString(byteArray JSONBytes) string {
 
 func byteArrayToOJ(byteArray JSONBytes) oj.OJsonObject {
 	return &oj.OJsonString{Value: byteArrayToString(byteArray)}
+}
+
+func checkBytesToString(checkBytes JSONCheckBytes) string {
+	if len(checkBytes.Original) == 0 && len(checkBytes.value) > 0 {
+		checkBytes.Original = hex.EncodeToString(checkBytes.value)
+	}
+	return checkBytes.Original
+}
+
+func checkBytesToOJ(checkBytes JSONCheckBytes) oj.OJsonObject {
+	return &oj.OJsonString{Value: checkBytesToString(checkBytes)}
 }
 
 func uint64ToOJ(i JSONUint64) oj.OJsonObject {

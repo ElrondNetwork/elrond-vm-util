@@ -1,11 +1,32 @@
 package vmtestjson
 
-import "math/big"
+import (
+	"bytes"
+	"math/big"
+)
 
 // JSONBytes stores the parsed byte slice value but also the original parsed string
 type JSONBytes struct {
 	Value    []byte
 	Original string
+}
+
+// JSONCheckBytes holds a byte slice condition.
+// Values are checked for equality.
+// "*" allows all values.
+type JSONCheckBytes struct {
+	value    []byte
+	isStar   bool
+	Original string
+}
+
+// Check returns true if condition expressed in object holds for another value.
+// Explicit values are interpreted as equals assertion.
+func (jcbytes JSONCheckBytes) Check(other []byte) bool {
+	if jcbytes.isStar {
+		return true
+	}
+	return bytes.Equal(jcbytes.value, other)
 }
 
 // JSONBigInt stores the parsed big int value but also the original parsed string

@@ -14,6 +14,26 @@ import (
 const filePrefix = "file:"
 const keccak256Prefix = "keccak256:"
 
+func (p *Parser) parseCheckBytes(obj oj.OJsonObject) (JSONCheckBytes, error) {
+	if isStar(obj) {
+		// "*" means any value, skip checking it
+		return JSONCheckBytes{
+			value:    nil,
+			isStar:   true,
+			Original: "*"}, nil
+	}
+
+	jb, err := p.processAnyValueAsByteArray(obj)
+	if err != nil {
+		return JSONCheckBytes{}, err
+	}
+	return JSONCheckBytes{
+		value:    jb.Value,
+		isStar:   false,
+		Original: jb.Original,
+	}, nil
+}
+
 func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (JSONBytes, error) {
 	strVal, err := p.parseString(obj)
 	if err != nil {
