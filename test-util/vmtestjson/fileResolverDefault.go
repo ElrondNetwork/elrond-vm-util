@@ -33,11 +33,8 @@ func (fr *DefaultFileResolver) SetContext(contextPath string) {
 	fr.contextPath = contextPath
 }
 
-// ResolveFileValue converts a value prefixed with "file:" and replaces it with the file contents.
-func (fr *DefaultFileResolver) ResolveFileValue(value string) ([]byte, error) {
-	if len(value) == 0 {
-		return []byte{}, nil
-	}
+// ResolveAbsolutePath yields absolute value based on context.
+func (fr *DefaultFileResolver) ResolveAbsolutePath(value string) string {
 	var fullPath string
 	if replacement, shouldReplace := fr.contractPathReplacements[value]; shouldReplace {
 		fullPath = replacement
@@ -45,6 +42,15 @@ func (fr *DefaultFileResolver) ResolveFileValue(value string) ([]byte, error) {
 		testDirPath := filepath.Dir(fr.contextPath)
 		fullPath = filepath.Join(testDirPath, value)
 	}
+	return fullPath
+}
+
+// ResolveFileValue converts a value prefixed with "file:" and replaces it with the file contents.
+func (fr *DefaultFileResolver) ResolveFileValue(value string) ([]byte, error) {
+	if len(value) == 0 {
+		return []byte{}, nil
+	}
+	fullPath := fr.ResolveAbsolutePath(value)
 	scCode, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return []byte{}, err
