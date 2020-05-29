@@ -28,6 +28,11 @@ type BlockInfo struct {
 	BlockEpoch     JSONUint64
 }
 
+// ExternalStepsStep allows including steps from another file
+type ExternalStepsStep struct {
+	Path string
+}
+
 // SetStateStep is a step where data is saved to the blockchain mock.
 type SetStateStep struct {
 	Comment           string
@@ -52,9 +57,17 @@ type TxStep struct {
 	ExpectedResult *TransactionResult
 }
 
+var _ Step = (*ExternalStepsStep)(nil)
 var _ Step = (*SetStateStep)(nil)
 var _ Step = (*CheckStateStep)(nil)
 var _ Step = (*TxStep)(nil)
+
+const stepNameExternalSteps = "externalSteps"
+
+// StepTypeName type as string
+func (*ExternalStepsStep) StepTypeName() string {
+	return stepNameExternalSteps
+}
 
 const stepNameSetState = "setState"
 

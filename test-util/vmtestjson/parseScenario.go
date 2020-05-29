@@ -86,19 +86,34 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 	}
 
 	var err error
-	step := ""
+	stepTypeStr := ""
 	for _, kvp := range stepMap.OrderedKV {
 		if kvp.Key == "step" {
-			step, err = p.parseString(kvp.Value)
+			stepTypeStr, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("step type not a string: %w", err)
 			}
 		}
 	}
 
-	switch step {
+	switch stepTypeStr {
 	case "":
 		return nil, errors.New("no step type field provided")
+	case stepNameExternalSteps:
+		step := &ExternalStepsStep{}
+		for _, kvp := range stepMap.OrderedKV {
+			switch kvp.Key {
+			case "step":
+			case "path":
+				step.Path, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad externalSteps path: %w", err)
+				}
+			default:
+				return nil, fmt.Errorf("invalid externalSteps field: %s", kvp.Key)
+			}
+		}
+		return step, nil
 	case stepNameSetState:
 		step := &SetStateStep{}
 		for _, kvp := range stepMap.OrderedKV {
@@ -168,7 +183,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (Step, error) {
 	case stepNameValidatorReward:
 		return p.parseTxStep(ValidatorReward, stepMap)
 	default:
-		return nil, fmt.Errorf("unknown step type: %s", step)
+		return nil, fmt.Errorf("unknown step type: %s", stepTypeStr)
 	}
 }
 

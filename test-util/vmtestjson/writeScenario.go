@@ -33,6 +33,8 @@ func ScenarioToOrderedJSON(scenario *Scenario) oj.OJsonObject {
 		stepOJ := oj.NewMap()
 		stepOJ.Put("step", stringToOJ(generalStep.StepTypeName()))
 		switch step := generalStep.(type) {
+		case *ExternalStepsStep:
+			stepOJ.Put("path", stringToOJ(step.Path))
 		case *SetStateStep:
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))

@@ -4,6 +4,10 @@
     "checkGas": false,
     "steps": [
         {
+            "step": "externalSteps",
+            "path": "other.scen.json"
+        },
+        {
             "step": "setState",
             "comment": "not much to comment here, but we can",
             "accounts": {
