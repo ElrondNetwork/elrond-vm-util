@@ -105,7 +105,9 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*CheckAccount, err
 		return nil, errors.New("unmarshalled account object is not a map")
 	}
 
-	acct := CheckAccount{}
+	acct := CheckAccount{
+		IgnoreStorage: false,
+	}
 	var err error
 
 	for _, kvp := range acctMap.OrderedKV {
@@ -121,25 +123,29 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*CheckAccount, err
 				return nil, errors.New("invalid account balance")
 			}
 		case "storage":
-			// TODO: convert to a more permissive format
-			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
-			if !storageOk {
-				return nil, errors.New("invalid account storage")
-			}
-			for _, storageKvp := range storageMap.OrderedKV {
-				byteKey, err := p.parseAnyValueAsByteArray(storageKvp.Key)
-				if err != nil {
-					return nil, fmt.Errorf("invalid account storage key: %w", err)
+			if isStar(kvp.Value) {
+				acct.IgnoreStorage = true
+			} else {
+				// TODO: convert to a more permissive format
+				storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
+				if !storageOk {
+					return nil, errors.New("invalid account storage")
 				}
-				byteVal, err := p.processAnyValueAsByteArray(storageKvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("invalid account storage value: %w", err)
+				for _, storageKvp := range storageMap.OrderedKV {
+					byteKey, err := p.parseAnyValueAsByteArray(storageKvp.Key)
+					if err != nil {
+						return nil, fmt.Errorf("invalid account storage key: %w", err)
+					}
+					byteVal, err := p.processAnyValueAsByteArray(storageKvp.Value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid account storage value: %w", err)
+					}
+					stElem := StorageKeyValuePair{
+						Key:   JSONBytes{Value: byteKey, Original: storageKvp.Key},
+						Value: byteVal,
+					}
+					acct.CheckStorage = append(acct.CheckStorage, &stElem)
 				}
-				stElem := StorageKeyValuePair{
-					Key:   JSONBytes{Value: byteKey, Original: storageKvp.Key},
-					Value: byteVal,
-				}
-				acct.Storage = append(acct.Storage, &stElem)
 			}
 		case "code":
 			// TODO: convert to JSONCheckBytes (when it exists)

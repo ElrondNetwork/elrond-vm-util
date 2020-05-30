@@ -155,6 +155,13 @@
                         "``32_byte_key_____________________": "``string___interpreted___as__bytes"
                     },
                     "code": "file:smart-contract.wasm"
+                },
+                "``smart_contract_address_2______s1": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": "*",
+                    "code": "",
+                    "asyncCallData": "func@arg1@arg2"
                 }
             }
         }

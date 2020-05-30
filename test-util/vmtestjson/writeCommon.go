@@ -29,23 +29,27 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 	return acctsOJ
 }
 
-func checkAccountsToOJ(accounts []*CheckAccount) oj.OJsonObject {
+func checkAccountsToOJ(checkAccounts []*CheckAccount) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
-	for _, account := range accounts {
+	for _, checkAccount := range checkAccounts {
 		acctOJ := oj.NewMap()
-		acctOJ.Put("nonce", checkUint64ToOJ(account.Nonce))
-		acctOJ.Put("balance", checkBigIntToOJ(account.Balance))
+		acctOJ.Put("nonce", checkUint64ToOJ(checkAccount.Nonce))
+		acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
 		storageOJ := oj.NewMap()
-		for _, st := range account.Storage {
+		for _, st := range checkAccount.CheckStorage {
 			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
 		}
-		acctOJ.Put("storage", storageOJ)
-		acctOJ.Put("code", byteArrayToOJ(account.Code))
-		if len(account.AsyncCallData) > 0 {
-			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
+		if checkAccount.IgnoreStorage {
+			acctOJ.Put("storage", stringToOJ("*"))
+		} else {
+			acctOJ.Put("storage", storageOJ)
+		}
+		acctOJ.Put("code", byteArrayToOJ(checkAccount.Code))
+		if len(checkAccount.AsyncCallData) > 0 {
+			acctOJ.Put("asyncCallData", stringToOJ(checkAccount.AsyncCallData))
 		}
 
-		acctsOJ.Put(byteArrayToString(account.Address), acctOJ)
+		acctsOJ.Put(byteArrayToString(checkAccount.Address), acctOJ)
 	}
 
 	return acctsOJ
