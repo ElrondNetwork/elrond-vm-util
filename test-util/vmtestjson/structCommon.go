@@ -7,6 +7,7 @@ import (
 // Account is a json object representing an account.
 type Account struct {
 	Address       JSONBytes
+	Comment       string
 	Nonce         JSONUint64
 	Balance       JSONBigInt
 	Storage       []*StorageKeyValuePair
@@ -23,6 +24,7 @@ type StorageKeyValuePair struct {
 // CheckAccount is a json object representing checks for an account.
 type CheckAccount struct {
 	Address       JSONBytes
+	Comment       string
 	Nonce         JSONCheckUint64
 	Balance       JSONCheckBigInt
 	IgnoreStorage bool

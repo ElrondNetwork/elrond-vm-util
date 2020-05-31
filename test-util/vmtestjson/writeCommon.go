@@ -11,6 +11,9 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, account := range accounts {
 		acctOJ := oj.NewMap()
+		if len(account.Comment) > 0 {
+			acctOJ.Put("comment", stringToOJ(account.Comment))
+		}
 		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
 		acctOJ.Put("balance", bigIntToOJ(account.Balance))
 		storageOJ := oj.NewMap()
@@ -33,6 +36,9 @@ func checkAccountsToOJ(checkAccounts *CheckAccounts) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, checkAccount := range checkAccounts.Accounts {
 		acctOJ := oj.NewMap()
+		if len(checkAccount.Comment) > 0 {
+			acctOJ.Put("comment", stringToOJ(checkAccount.Comment))
+		}
 		acctOJ.Put("nonce", checkUint64ToOJ(checkAccount.Nonce))
 		acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
 		storageOJ := oj.NewMap()

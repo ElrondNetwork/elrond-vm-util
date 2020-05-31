@@ -29,6 +29,11 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*Account, error) {
 
 	for _, kvp := range acctMap.OrderedKV {
 		switch kvp.Key {
+		case "comment":
+			acct.Comment, err = p.parseString(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account comment: %w", err)
+			}
 		case "nonce":
 			acct.Nonce, err = p.processUint64(kvp.Value)
 			if err != nil {
@@ -112,6 +117,11 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*CheckAccount, err
 
 	for _, kvp := range acctMap.OrderedKV {
 		switch kvp.Key {
+		case "comment":
+			acct.Comment, err = p.parseString(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid check account comment: %w", err)
+			}
 		case "nonce":
 			acct.Nonce, err = p.processCheckUint64(kvp.Value)
 			if err != nil {

@@ -12,6 +12,7 @@
             "comment": "not much to comment here, but we can",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
+                    "comment": "we can comment on individual account initializations",
                     "nonce": "0",
                     "balance": "0xe8d4a51000",
                     "storage": {},
@@ -142,6 +143,7 @@
             "comment": "check that previous tx did the right thing",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
+                    "comment": "we can comment on individual account checks",
                     "nonce": "1",
                     "balance": "0xe8d4951000",
                     "storage": {},
