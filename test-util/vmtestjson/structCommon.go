@@ -14,6 +14,12 @@ type Account struct {
 	AsyncCallData string
 }
 
+// StorageKeyValuePair is a json key value pair in the storage map.
+type StorageKeyValuePair struct {
+	Key   JSONBytes
+	Value JSONBytes
+}
+
 // CheckAccount is a json object representing checks for an account.
 type CheckAccount struct {
 	Address       JSONBytes
@@ -25,10 +31,10 @@ type CheckAccount struct {
 	AsyncCallData string
 }
 
-// StorageKeyValuePair is a json key value pair in the storage map.
-type StorageKeyValuePair struct {
-	Key   JSONBytes
-	Value JSONBytes
+// CheckAccounts encodes rules to check mock accounts.
+type CheckAccounts struct {
+	OtherAccountsAllowed bool
+	Accounts             []*CheckAccount
 }
 
 // TransactionType describes the type of simulate transaction

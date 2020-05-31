@@ -29,9 +29,9 @@ func accountsToOJ(accounts []*Account) oj.OJsonObject {
 	return acctsOJ
 }
 
-func checkAccountsToOJ(checkAccounts []*CheckAccount) oj.OJsonObject {
+func checkAccountsToOJ(checkAccounts *CheckAccounts) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
-	for _, checkAccount := range checkAccounts {
+	for _, checkAccount := range checkAccounts.Accounts {
 		acctOJ := oj.NewMap()
 		acctOJ.Put("nonce", checkUint64ToOJ(checkAccount.Nonce))
 		acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
@@ -50,6 +50,10 @@ func checkAccountsToOJ(checkAccounts []*CheckAccount) oj.OJsonObject {
 		}
 
 		acctsOJ.Put(byteArrayToString(checkAccount.Address), acctOJ)
+	}
+
+	if checkAccounts.OtherAccountsAllowed {
+		acctsOJ.Put("+", stringToOJ(""))
 	}
 
 	return acctsOJ

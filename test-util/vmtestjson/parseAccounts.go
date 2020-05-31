@@ -167,24 +167,31 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*CheckAccount, err
 	return &acct, nil
 }
 
-func (p *Parser) processCheckAccountMap(acctMapRaw oj.OJsonObject) ([]*CheckAccount, error) {
-	var accounts []*CheckAccount
+func (p *Parser) processCheckAccountMap(acctMapRaw oj.OJsonObject) (*CheckAccounts, error) {
+	var checkAccounts = &CheckAccounts{
+		OtherAccountsAllowed: false,
+		Accounts:             nil,
+	}
+
 	preMap, isPreMap := acctMapRaw.(*oj.OJsonMap)
 	if !isPreMap {
 		return nil, errors.New("unmarshalled check account map object is not a map")
 	}
 	for _, acctKVP := range preMap.OrderedKV {
-		acct, acctErr := p.processCheckAccount(acctKVP.Value)
-		if acctErr != nil {
-			return nil, acctErr
+		if acctKVP.Key == "+" {
+			checkAccounts.OtherAccountsAllowed = true
+		} else {
+			acct, acctErr := p.processCheckAccount(acctKVP.Value)
+			if acctErr != nil {
+				return nil, acctErr
+			}
+			acctAddr, hexErr := p.parseAccountAddress(acctKVP.Key)
+			if hexErr != nil {
+				return nil, hexErr
+			}
+			acct.Address = acctAddr
+			checkAccounts.Accounts = append(checkAccounts.Accounts, acct)
 		}
-		acctAddr, hexErr := p.parseAccountAddress(acctKVP.Key)
-		if hexErr != nil {
-			return nil, hexErr
-		}
-		acct.Address = acctAddr
-		accounts = append(accounts, acct)
-
 	}
-	return accounts, nil
+	return checkAccounts, nil
 }
