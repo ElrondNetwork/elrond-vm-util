@@ -159,13 +159,12 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 				}
 			}
 		case "code":
-			// TODO: convert to JSONCheckBytes (when it exists)
-			acct.Code, err = p.processAnyValueAsByteArray(kvp.Value)
+			acct.Code, err = p.parseCheckBytes(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
 		case "asyncCallData":
-			// TODO: convert to JSONCheckBytes (when it exists)
+			// TODO: convert to JSONCheckString (when it exists)
 			acct.AsyncCallData, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid asyncCallData string: %w", err)

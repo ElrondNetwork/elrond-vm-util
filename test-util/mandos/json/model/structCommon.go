@@ -29,7 +29,7 @@ type CheckAccount struct {
 	Balance       JSONCheckBigInt
 	IgnoreStorage bool
 	CheckStorage  []*StorageKeyValuePair
-	Code          JSONBytes
+	Code          JSONCheckBytes
 	AsyncCallData string
 }
 

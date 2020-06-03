@@ -162,7 +162,7 @@
                     "nonce": "*",
                     "balance": "*",
                     "storage": "*",
-                    "code": "",
+                    "code": "*",
                     "asyncCallData": "func@arg1@arg2"
                 },
                 "+": ""

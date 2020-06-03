@@ -51,7 +51,7 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		} else {
 			acctOJ.Put("storage", storageOJ)
 		}
-		acctOJ.Put("code", byteArrayToOJ(checkAccount.Code))
+		acctOJ.Put("code", checkBytesToOJ(checkAccount.Code))
 		if len(checkAccount.AsyncCallData) > 0 {
 			acctOJ.Put("asyncCallData", stringToOJ(checkAccount.AsyncCallData))
 		}
