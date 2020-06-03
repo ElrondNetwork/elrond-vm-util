@@ -5,12 +5,6 @@ import (
 	"math/big"
 )
 
-// JSONBytes stores the parsed byte slice value but also the original parsed string
-type JSONBytes struct {
-	Value    []byte
-	Original string
-}
-
 // JSONCheckBytes holds a byte slice condition.
 // Values are checked for equality.
 // "*" allows all values.
@@ -29,12 +23,6 @@ func (jcbytes JSONCheckBytes) Check(other []byte) bool {
 	return bytes.Equal(jcbytes.Value, other)
 }
 
-// JSONBigInt stores the parsed big int value but also the original parsed string
-type JSONBigInt struct {
-	Value    *big.Int
-	Original string
-}
-
 // JSONCheckBigInt holds a big int condition.
 // Values are checked for equality.
 // "*" allows all values.
@@ -51,12 +39,6 @@ func (jcbi JSONCheckBigInt) Check(other *big.Int) bool {
 		return true
 	}
 	return jcbi.Value.Cmp(other) == 0
-}
-
-// JSONUint64 stores the parsed uint64 value but also the original parsed string
-type JSONUint64 struct {
-	Value    uint64
-	Original string
 }
 
 // JSONCheckUint64 holds a uint64 condition.
