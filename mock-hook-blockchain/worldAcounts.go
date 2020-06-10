@@ -2,6 +2,8 @@ package callbackblockchain
 
 import (
 	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // AccountMap is a map from address to account
@@ -14,12 +16,19 @@ type Account struct {
 	Nonce         uint64
 	Balance       *big.Int
 	BalanceDelta  *big.Int
-	Storage       map[string][]byte
+	Storage       map[string]vmcommon.StorageData
 	Code          []byte
 	AsyncCallData string
 }
 
-var storageDefaultValue = []byte{}
+// NewAddressMock allows tests to specify what new addresses to generate
+type NewAddressMock struct {
+	CreatorAddress []byte
+	CreatorNonce   uint64
+	NewAddress     []byte
+}
+
+var storageDefaultValue = vmcommon.StorageData{Data: []byte{}}
 
 // NewAccountMap creates a new AccountMap instance
 func NewAccountMap() AccountMap {
@@ -55,7 +64,7 @@ func StorageKey(address []byte) string {
 }
 
 // StorageValue yields the storage value for key, default 0
-func (a *Account) StorageValue(key string) []byte {
+func (a *Account) StorageValue(key string) vmcommon.StorageData {
 	value, found := a.Storage[key]
 	if !found {
 		return storageDefaultValue
