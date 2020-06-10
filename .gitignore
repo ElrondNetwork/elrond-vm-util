@@ -13,3 +13,6 @@
 
 # Go mod
 /vendor
+
+# IDE
+.idea/

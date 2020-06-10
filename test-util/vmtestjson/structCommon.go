@@ -65,16 +65,17 @@ func (tt TransactionType) IsSmartContractTx() bool {
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {
-	Type      TransactionType
-	Nonce     JSONUint64
-	Value     JSONBigInt
-	From      JSONBytes
-	To        JSONBytes
-	Function  string
-	Code      JSONBytes
-	Arguments []JSONBytes
-	GasPrice  JSONUint64
-	GasLimit  JSONUint64
+	Type           TransactionType
+	Nonce          JSONUint64
+	Value          JSONBigInt
+	From           JSONBytes
+	To             JSONBytes
+	Function       string
+	Code           JSONBytes
+	Arguments      []JSONBytes
+	GasPrice       JSONUint64
+	GasLimit       JSONUint64
+	OriginalTxHash JSONBytes
 }
 
 // TransactionResult is a json object representing an expected transaction result.
