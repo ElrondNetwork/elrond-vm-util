@@ -174,7 +174,7 @@ func (b *BlockchainHookMock) GetShardOfAddress(address []byte) uint32 {
 	return account.ShardID
 }
 
-// IsSmartContractAddress -
+// IsSmartContract -
 func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
