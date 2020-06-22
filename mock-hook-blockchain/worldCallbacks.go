@@ -8,18 +8,9 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-var zero = big.NewInt(0)
+var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
 
-// AccountExists yields whether or not an account is considered to exist in the blockchain or not.
-// Note: on Ethereum an account with Balance = 0 and Nonce = 0 is considered to not exist.
-// In Elrond we can have existing accounts with zer obalance and nonce.
-func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
-	acct := b.AcctMap.GetAccount(address)
-	if acct == nil {
-		return false, nil
-	}
-	return acct.Exists, nil
-}
+var zero = big.NewInt(0)
 
 // NewAddress adapts between K model and elrond function
 func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []byte) ([]byte, error) {
@@ -49,24 +40,6 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 	return []byte{}, nil
 }
 
-// GetBalance should retrieve the balance of an account
-func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
-	acct := b.AcctMap.GetAccount(address)
-	if acct == nil {
-		return zero, nil
-	}
-	return acct.Balance, nil
-}
-
-// GetNonce should retrieve the nonce of an account
-func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
-	acct := b.AcctMap.GetAccount(address)
-	if acct == nil {
-		return 0, nil
-	}
-	return acct.Nonce, nil
-}
-
 // GetStorageData yields the storage value for a certain account and index.
 // Should return an empty byte array if the key is missing from the account storage
 func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
@@ -75,25 +48,6 @@ func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte)
 		return []byte{}, nil
 	}
 	return acct.StorageValue(string(index)), nil
-}
-
-// IsCodeEmpty should return whether of not an account is SC.
-func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
-	acct := b.AcctMap.GetAccount(address)
-	if acct == nil {
-		return true, nil
-	}
-	return len(acct.Code) == 0, nil
-}
-
-// GetCode should return the compiled and assembled SC code.
-// Empty byte array if the account is a wallet.
-func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
-	acct := b.AcctMap.GetAccount(address)
-	if acct == nil {
-		return []byte{}, nil
-	}
-	return acct.Code, nil
 }
 
 // GetBlockhash should return the hash of the nth previous blockchain.
@@ -198,4 +152,34 @@ func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 // GetAllState -
 func (b *BlockchainHookMock) GetAllState(_ []byte) (map[string][]byte, error) {
 	return make(map[string][]byte), nil
+}
+
+// GetNonce should retrieve the nonce of an account
+func (b *BlockchainHookMock) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+	account := b.AcctMap.GetAccount(address)
+	if account == nil {
+		return nil, errors.New("account not found")
+	}
+
+	return account, nil
+}
+
+// GetShardOfAddress -
+func (b *BlockchainHookMock) GetShardOfAddress(address []byte) uint32 {
+	account := b.AcctMap.GetAccount(address)
+	if account == nil {
+		return 0
+	}
+
+	return account.ShardID
+}
+
+// IsSmartContract -
+func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
+	account := b.AcctMap.GetAccount(address)
+	if account == nil {
+		return false
+	}
+
+	return account.IsSmartContract
 }
