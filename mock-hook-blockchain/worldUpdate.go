@@ -7,17 +7,6 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func defaultAccount(address []byte) *Account {
-	return &Account{
-		Exists:  false,
-		Address: address,
-		Nonce:   0,
-		Balance: zero,
-		Storage: make(map[string][]byte),
-		Code:    nil,
-	}
-}
-
 // UpdateBalance sets a new balance to an account
 func (b *BlockchainHookMock) UpdateBalance(address []byte, newBalance *big.Int) error {
 	acct := b.AcctMap.GetAccount(address)
@@ -60,11 +49,23 @@ func (b *BlockchainHookMock) UpdateWorldStateBefore(
 }
 
 // UpdateAccounts should be called after the VM test has run, to update world state
-func (b *BlockchainHookMock) UpdateAccounts(modifiedAccounts []*vmi.OutputAccount, accountsToDelete [][]byte) error {
+func (b *BlockchainHookMock) UpdateAccounts(
+	modifiedAccounts []*vmi.OutputAccount,
+	accountsToDelete [][]byte,
+	callerAddress []byte) error {
+
 	for _, modAcct := range modifiedAccounts {
 		acct := b.AcctMap.GetAccount(modAcct.Address)
 		if acct == nil {
-			acct = defaultAccount(modAcct.Address)
+			acct = &Account{
+				Exists:       false,
+				Address:      modAcct.Address,
+				Nonce:        0,
+				Balance:      zero,
+				Storage:      make(map[string][]byte),
+				Code:         nil,
+				OwnerAddress: callerAddress,
+			}
 			b.AcctMap.PutAccount(acct)
 		}
 		acct.Exists = true
