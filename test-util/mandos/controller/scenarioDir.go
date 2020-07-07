@@ -34,7 +34,7 @@ func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 					fmt.Print("  ok\n")
 				} else {
 					nrFailed++
-					fmt.Print("  FAIL!!!\n")
+					fmt.Printf("  FAIL: %s\n", testErr.Error())
 				}
 			}
 		}
