@@ -183,3 +183,17 @@ func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
 
 	return account.IsSmartContract
 }
+
+func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
+	account := b.AcctMap.GetAccount(address)
+	if account == nil {
+		return true, nil
+	}
+
+	if !account.IsSmartContract {
+		return true, nil
+	}
+
+	metadata := vmcommon.CodeMetadataFromBytes(account.CodeMetadata)
+	return metadata.Payable, nil
+}
