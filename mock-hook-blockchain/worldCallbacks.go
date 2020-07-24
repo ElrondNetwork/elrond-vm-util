@@ -2,7 +2,9 @@ package callbackblockchain
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -154,11 +156,11 @@ func (b *BlockchainHookMock) GetAllState(_ []byte) (map[string][]byte, error) {
 	return make(map[string][]byte), nil
 }
 
-// GetNonce should retrieve the nonce of an account
+// GetUserAccount retrieves account info from map, or error if not found.
 func (b *BlockchainHookMock) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
-		return nil, errors.New("account not found")
+		return nil, fmt.Errorf("account not found: %s", hex.EncodeToString(address))
 	}
 
 	return account, nil
