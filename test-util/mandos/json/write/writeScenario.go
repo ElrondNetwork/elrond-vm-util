@@ -60,6 +60,10 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
 			stepOJ.Put("accounts", checkAccountsToOJ(step.CheckAccounts))
+		case *mj.DumpStateStep:
+			if len(step.Comment) > 0 {
+				stepOJ.Put("comment", stringToOJ(step.Comment))
+			}
 		case *mj.TxStep:
 			if len(step.TxIdent) > 0 {
 				stepOJ.Put("txId", stringToOJ(step.TxIdent))

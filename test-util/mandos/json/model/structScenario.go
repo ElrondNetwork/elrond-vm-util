@@ -49,6 +49,11 @@ type CheckStateStep struct {
 	CheckAccounts *CheckAccounts
 }
 
+// DumpStateStep is a step that simply prints the entire state to console. Useful for debugging.
+type DumpStateStep struct {
+	Comment string
+}
+
 // TxStep is a step where a transaction is executed.
 type TxStep struct {
 	TxIdent        string
@@ -60,6 +65,7 @@ type TxStep struct {
 var _ Step = (*ExternalStepsStep)(nil)
 var _ Step = (*SetStateStep)(nil)
 var _ Step = (*CheckStateStep)(nil)
+var _ Step = (*DumpStateStep)(nil)
 var _ Step = (*TxStep)(nil)
 
 // StepNameExternalSteps is a json step type name.
@@ -84,6 +90,14 @@ const StepNameCheckState = "checkState"
 // StepTypeName type as string
 func (*CheckStateStep) StepTypeName() string {
 	return StepNameCheckState
+}
+
+// StepNameDumpState is a json step type name.
+const StepNameDumpState = "dumpState"
+
+// StepTypeName type as string
+func (*DumpStateStep) StepTypeName() string {
+	return StepNameDumpState
 }
 
 // StepNameScCall is a json step type name.

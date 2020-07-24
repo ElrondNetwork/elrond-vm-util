@@ -175,6 +175,21 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 			}
 		}
 		return step, nil
+	case mj.StepNameDumpState:
+		step := &mj.DumpStateStep{}
+		for _, kvp := range stepMap.OrderedKV {
+			switch kvp.Key {
+			case "step":
+			case "comment":
+				step.Comment, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad check state step comment: %w", err)
+				}
+			default:
+				return nil, fmt.Errorf("invalid check state field: %s", kvp.Key)
+			}
+		}
+		return step, nil
 	case mj.StepNameScCall:
 		return p.parseTxStep(mj.ScCall, stepMap)
 	case mj.StepNameScDeploy:
