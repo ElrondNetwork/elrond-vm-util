@@ -12,6 +12,9 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
+var strPrefixes = []string{"str:", "``", "''"}
+
+const addrPrefix = "address:"
 const filePrefix = "file:"
 const keccak256Prefix = "keccak256:"
 
@@ -103,9 +106,17 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	}
 
 	// allow ascii strings, for readability
-	if strings.HasPrefix(strRaw, "``") || strings.HasPrefix(strRaw, "''") {
-		str := strRaw[2:]
-		return []byte(str), nil
+	for _, strPrefix := range strPrefixes {
+		if strings.HasPrefix(strRaw, strPrefix) {
+			str := strRaw[len(strPrefix):]
+			return []byte(str), nil
+		}
+	}
+
+	// address
+	if strings.HasPrefix(strRaw, addrPrefix) {
+		addrName := strRaw[len(addrPrefix):]
+		return address([]byte(addrName))
 	}
 
 	// signed numbers
