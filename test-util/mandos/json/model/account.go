@@ -28,7 +28,7 @@ type CheckAccount struct {
 	IgnoreStorage bool
 	CheckStorage  []*StorageKeyValuePair
 	Code          JSONCheckBytes
-	AsyncCallData string
+	AsyncCallData JSONCheckBytes
 }
 
 // CheckAccounts encodes rules to check mock accounts.

@@ -50,8 +50,8 @@ type Transaction struct {
 // TransactionResult is a json object representing an expected transaction result.
 type TransactionResult struct {
 	Out        []JSONCheckBytes
-	Status     JSONBigInt
-	Message    string
+	Status     JSONCheckBigInt
+	Message    JSONCheckBytes
 	Gas        JSONCheckUint64
 	Refund     JSONCheckBigInt
 	IgnoreLogs bool

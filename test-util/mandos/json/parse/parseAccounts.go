@@ -112,7 +112,11 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 	}
 
 	acct := mj.CheckAccount{
-		IgnoreStorage: false,
+		Nonce:         mj.JSONCheckUint64Default(),
+		Balance:       mj.JSONCheckBigIntDefault(),
+		IgnoreStorage: true,
+		Code:          mj.JSONCheckBytesDefault(),
+		AsyncCallData: mj.JSONCheckBytesDefault(),
 	}
 	var err error
 
@@ -134,9 +138,8 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 				return nil, errors.New("invalid account balance")
 			}
 		case "storage":
-			if IsStar(kvp.Value) {
-				acct.IgnoreStorage = true
-			} else {
+			acct.IgnoreStorage = IsStar(kvp.Value)
+			if !acct.IgnoreStorage {
 				// TODO: convert to a more permissive format
 				storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
 				if !storageOk {
@@ -164,10 +167,9 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
 		case "asyncCallData":
-			// TODO: convert to JSONCheckString (when it exists)
-			acct.AsyncCallData, err = p.parseString(kvp.Value)
+			acct.AsyncCallData, err = p.parseCheckBytes(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid asyncCallData string: %w", err)
+				return nil, fmt.Errorf("invalid asyncCallData: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown account field: %s", kvp.Key)

@@ -40,8 +40,12 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		if len(checkAccount.Comment) > 0 {
 			acctOJ.Put("comment", stringToOJ(checkAccount.Comment))
 		}
-		acctOJ.Put("nonce", checkUint64ToOJ(checkAccount.Nonce))
-		acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
+		if !checkAccount.Nonce.IsDefault() {
+			acctOJ.Put("nonce", checkUint64ToOJ(checkAccount.Nonce))
+		}
+		if !checkAccount.Balance.IsDefault() {
+			acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
+		}
 		storageOJ := oj.NewMap()
 		for _, st := range checkAccount.CheckStorage {
 			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
@@ -51,9 +55,11 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		} else {
 			acctOJ.Put("storage", storageOJ)
 		}
-		acctOJ.Put("code", checkBytesToOJ(checkAccount.Code))
-		if len(checkAccount.AsyncCallData) > 0 {
-			acctOJ.Put("asyncCallData", stringToOJ(checkAccount.AsyncCallData))
+		if !checkAccount.Code.IsDefault() {
+			acctOJ.Put("code", checkBytesToOJ(checkAccount.Code))
+		}
+		if !checkAccount.AsyncCallData.IsDefault() {
+			acctOJ.Put("asyncCallData", checkBytesToOJ(checkAccount.AsyncCallData))
 		}
 
 		acctsOJ.Put(byteArrayToString(checkAccount.Address), acctOJ)
@@ -85,9 +91,11 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	outOJ := oj.OJsonList(outList)
 	resultOJ.Put("out", &outOJ)
 
-	resultOJ.Put("status", bigIntToOJ(res.Status))
-	if len(res.Message) > 0 {
-		resultOJ.Put("message", stringToOJ(res.Message))
+	if !res.Status.IsDefault() {
+		resultOJ.Put("status", checkBigIntToOJ(res.Status))
+	}
+	if !res.Message.IsDefault() {
+		resultOJ.Put("message", checkBytesToOJ(res.Message))
 	}
 	if res.IgnoreLogs {
 		resultOJ.Put("logs", stringToOJ("*"))
@@ -98,8 +106,12 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 			resultOJ.Put("logs", logsToOJ(res.Logs))
 		}
 	}
-	resultOJ.Put("gas", checkUint64ToOJ(res.Gas))
-	resultOJ.Put("refund", checkBigIntToOJ(res.Refund))
+	if !res.Gas.IsDefault() {
+		resultOJ.Put("gas", checkUint64ToOJ(res.Gas))
+	}
+	if !res.Refund.IsDefault() {
+		resultOJ.Put("refund", checkBigIntToOJ(res.Refund))
+	}
 
 	return resultOJ
 }

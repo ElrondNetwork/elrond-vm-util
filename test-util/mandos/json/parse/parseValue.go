@@ -107,6 +107,7 @@ func (p *Parser) parseString(obj oj.OJsonObject) (string, error) {
 	return str.Value, nil
 }
 
+// IsStar returns whether check object is othe form "*".
 func IsStar(obj oj.OJsonObject) bool {
 	str, isStr := obj.(*oj.OJsonString)
 	if !isStr {

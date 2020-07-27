@@ -103,7 +103,7 @@
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0x2710"
                 },
                 "code": "file:smart-contract.wasm",
-                "asyncCallData": "someAsync@call@data"
+                "asyncCallData": "``someAsync@call@data"
             }
         }
     }

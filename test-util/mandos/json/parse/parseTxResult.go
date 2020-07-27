@@ -14,7 +14,12 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 		return nil, errors.New("unmarshalled block result is not a map")
 	}
 
-	blr := mj.TransactionResult{}
+	blr := mj.TransactionResult{
+		Status:  mj.JSONCheckBigIntDefault(),
+		Message: mj.JSONCheckBytesDefault(),
+		Gas:     mj.JSONCheckUint64Default(),
+		Refund:  mj.JSONCheckBigIntDefault(),
+	}
 	var err error
 	for _, kvp := range blrMap.OrderedKV {
 		switch kvp.Key {
@@ -24,12 +29,12 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 				return nil, fmt.Errorf("invalid block result out: %w", err)
 			}
 		case "status":
-			blr.Status, err = p.processBigInt(kvp.Value, bigIntSignedBytes)
+			blr.Status, err = p.processCheckBigInt(kvp.Value, bigIntSignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result status: %w", err)
 			}
 		case "message":
-			blr.Message, err = p.parseString(kvp.Value)
+			blr.Message, err = p.parseCheckBytes(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}

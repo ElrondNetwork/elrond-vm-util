@@ -42,6 +42,61 @@ func TestString(t *testing.T) {
 	result, err = p.parseAnyValueAsByteArray("`` ")
 	require.Nil(t, err)
 	require.Equal(t, []byte(" "), result)
+
+	result, err = p.parseAnyValueAsByteArray("''abcdefg")
+	require.Nil(t, err)
+	require.Equal(t, []byte("abcdefg"), result)
+
+	result, err = p.parseAnyValueAsByteArray("''")
+	require.Nil(t, err)
+	require.Equal(t, []byte{}, result)
+
+	result, err = p.parseAnyValueAsByteArray("'''")
+	require.Nil(t, err)
+	require.Equal(t, []byte("'"), result)
+
+	result, err = p.parseAnyValueAsByteArray("'' ")
+	require.Nil(t, err)
+	require.Equal(t, []byte(" "), result)
+
+	result, err = p.parseAnyValueAsByteArray("''``")
+	require.Nil(t, err)
+	require.Equal(t, []byte("``"), result)
+
+	result, err = p.parseAnyValueAsByteArray("``''")
+	require.Nil(t, err)
+	require.Equal(t, []byte("''"), result)
+
+	result, err = p.parseAnyValueAsByteArray("str:abcdefg")
+	require.Nil(t, err)
+	require.Equal(t, []byte("abcdefg"), result)
+
+	result, err = p.parseAnyValueAsByteArray("str:")
+	require.Nil(t, err)
+	require.Equal(t, []byte{}, result)
+}
+
+func TestAddress(t *testing.T) {
+	p := Parser{}
+	result, err := p.parseAnyValueAsByteArray("address:")
+	require.Nil(t, err)
+	require.Equal(t, []byte("________________________________"), result)
+
+	result, err = p.parseAnyValueAsByteArray("address:a")
+	require.Nil(t, err)
+	require.Equal(t, []byte("a_______________________________"), result)
+
+	result, err = p.parseAnyValueAsByteArray("address:an_address")
+	require.Nil(t, err)
+	require.Equal(t, []byte("an_address______________________"), result)
+
+	result, err = p.parseAnyValueAsByteArray("address:12345678901234567890123456789012")
+	require.Nil(t, err)
+	require.Equal(t, []byte("12345678901234567890123456789012"), result)
+
+	result, err = p.parseAnyValueAsByteArray("address:123456789012345678901234567890123")
+	require.Nil(t, err)
+	require.Equal(t, []byte("12345678901234567890123456789012"), result)
 }
 
 func TestUnsignedNumber(t *testing.T) {
@@ -129,6 +184,10 @@ func TestConcat(t *testing.T) {
 	require.Equal(t, []byte{}, result)
 
 	result, err = p.parseAnyValueAsByteArray("``a|``b")
+	require.Nil(t, err)
+	require.Equal(t, []byte("ab"), result)
+
+	result, err = p.parseAnyValueAsByteArray("``a|str:b")
 	require.Nil(t, err)
 	require.Equal(t, []byte("ab"), result)
 

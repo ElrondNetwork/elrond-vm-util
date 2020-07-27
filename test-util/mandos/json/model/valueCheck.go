@@ -14,6 +14,20 @@ type JSONCheckBytes struct {
 	Original string
 }
 
+// JSONCheckBytesDefault yields JSONCheckBytes default "*" value.
+func JSONCheckBytesDefault() JSONCheckBytes {
+	return JSONCheckBytes{
+		Value:    []byte{},
+		IsStar:   true,
+		Original: "",
+	}
+}
+
+// IsDefault yields true if the field was originally unspecified.
+func (jcbytes JSONCheckBytes) IsDefault() bool {
+	return jcbytes.IsStar && len(jcbytes.Original) == 0
+}
+
 // Check returns true if condition expressed in object holds for another value.
 // Explicit values are interpreted as equals assertion.
 func (jcbytes JSONCheckBytes) Check(other []byte) bool {
@@ -32,6 +46,20 @@ type JSONCheckBigInt struct {
 	Original string
 }
 
+// JSONCheckBigIntDefault yields JSONCheckBigInt default "*" value.
+func JSONCheckBigIntDefault() JSONCheckBigInt {
+	return JSONCheckBigInt{
+		Value:    nil,
+		IsStar:   true,
+		Original: "",
+	}
+}
+
+// IsDefault yields true if the field was originally unspecified.
+func (jcbi JSONCheckBigInt) IsDefault() bool {
+	return jcbi.IsStar && len(jcbi.Original) == 0
+}
+
 // Check returns true if condition expressed in object holds for another value.
 // Explicit values are interpreted as equals assertion.
 func (jcbi JSONCheckBigInt) Check(other *big.Int) bool {
@@ -48,6 +76,20 @@ type JSONCheckUint64 struct {
 	Value    uint64
 	IsStar   bool
 	Original string
+}
+
+// JSONCheckUint64Default yields JSONCheckBigInt default "*" value.
+func JSONCheckUint64Default() JSONCheckUint64 {
+	return JSONCheckUint64{
+		Value:    0,
+		IsStar:   true,
+		Original: "",
+	}
+}
+
+// IsDefault yields true if the field was originally unspecified.
+func (jcu JSONCheckUint64) IsDefault() bool {
+	return jcu.IsStar && len(jcu.Original) == 0
 }
 
 // Check returns true if condition expressed in object holds for another value.

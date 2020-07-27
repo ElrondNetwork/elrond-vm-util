@@ -60,7 +60,7 @@
             "txId": "1",
             "comment": "just an example",
             "tx": {
-                "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
+                "from": "address:an_address",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x00",
                 "function": "someFunctionName",
@@ -109,6 +109,25 @@
             }
         },
         {
+            "step": "scCall",
+            "txId": "1b",
+            "comment": "with minimal expected result",
+            "tx": {
+                "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
+                "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                "value": "0x00",
+                "function": "someFunctionName",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*"
+            }
+        },
+        {
             "step": "scDeploy",
             "txId": "2",
             "comment": "another",
@@ -130,7 +149,7 @@
                 "status": "",
                 "logs": [],
                 "gas": "*",
-                "refund": "0"
+                "refund": "5"
             }
         },
         {
@@ -177,10 +196,17 @@
                     "balance": "*",
                     "storage": "*",
                     "code": "*",
-                    "asyncCallData": "func@arg1@arg2"
+                    "asyncCallData": "``func@arg1@arg2"
+                },
+                "``account_with_defaults___________": {
+                    "storage": "*"
                 },
                 "+": ""
             }
+        },
+        {
+            "step": "dumpState",
+            "comment": "print everything to consolecd"
         }
     ]
 }
