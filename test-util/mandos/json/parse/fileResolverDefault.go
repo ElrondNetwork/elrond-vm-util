@@ -28,6 +28,14 @@ func (fr *DefaultFileResolver) ReplacePath(pathInTest, actualPath string) *Defau
 	return fr
 }
 
+// Clone creates new instance of the same type.
+func (fr *DefaultFileResolver) Clone() FileResolver {
+	return &DefaultFileResolver{
+		contextPath:              fr.contextPath,
+		contractPathReplacements: fr.contractPathReplacements,
+	}
+}
+
 // SetContext sets directory where the test runs, to help resolve relative paths.
 func (fr *DefaultFileResolver) SetContext(contextPath string) {
 	fr.contextPath = contextPath
