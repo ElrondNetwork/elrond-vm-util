@@ -45,7 +45,7 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) 
 				if len(identifierValue) != 32 {
 					return nil, fmt.Errorf("invalid log identifier - should be 32 bytes in length")
 				}
-				logEntry.Identifier = mj.JSONBytes{Value: identifierValue, Original: strVal}
+				logEntry.Identifier = mj.NewJSONBytesFromString(identifierValue, strVal)
 			case "topics":
 				logEntry.Topics, err = p.parseByteArrayList(kvp.Value)
 				if err != nil {

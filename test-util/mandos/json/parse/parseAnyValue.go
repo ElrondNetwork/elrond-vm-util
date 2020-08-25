@@ -47,16 +47,54 @@ func (p *Parser) parseCheckBytes(obj oj.OJsonObject) (mj.JSONCheckBytes, error) 
 	}, nil
 }
 
-func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (mj.JSONBytes, error) {
+func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (mj.JSONBytesFromString, error) {
 	strVal, err := p.parseString(obj)
 	if err != nil {
-		return mj.JSONBytes{}, err
+		return mj.JSONBytesFromString{}, err
 	}
 	result, err := p.parseAnyValueAsByteArray(strVal)
-	return mj.JSONBytes{
-		Value:    result,
-		Original: strVal,
+	return mj.NewJSONBytesFromString(result, strVal), err
+}
+
+func (p *Parser) processSubTreeAsByteArray(obj oj.OJsonObject) (mj.JSONBytesFromTree, error) {
+	value, err := p.computeSubTreeValue(obj)
+	return mj.JSONBytesFromTree{
+		Value:    value,
+		Original: obj,
 	}, err
+}
+
+func (p *Parser) computeSubTreeValue(obj oj.OJsonObject) ([]byte, error) {
+	if str, isStr := obj.(*oj.OJsonString); isStr {
+		return p.parseAnyValueAsByteArray(str.Value)
+	}
+
+	if list, isList := obj.(*oj.OJsonList); isList {
+		var concat []byte
+		for _, item := range list.AsList() {
+			value, err := p.computeSubTreeValue(item)
+			if err != nil {
+				return []byte{}, err
+			}
+			concat = append(concat, value...)
+		}
+		return concat, nil
+	}
+
+	if mp, isMap := obj.(*oj.OJsonMap); isMap {
+		var concat []byte
+		for _, kvp := range mp.OrderedKV {
+			// keys are ignored, they do not form the value but act like documentation
+			value, err := p.computeSubTreeValue(kvp.Value)
+			if err != nil {
+				return []byte{}, err
+			}
+			concat = append(concat, value...)
+		}
+		return concat, nil
+	}
+
+	return []byte{}, errors.New("cannot interpret given JSON subtree as value")
 }
 
 func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {

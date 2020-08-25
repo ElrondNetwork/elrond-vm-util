@@ -8,15 +8,15 @@ import (
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
-func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytes, error) {
+func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytesFromString, error) {
 	if len(addrRaw) == 0 {
-		return mj.JSONBytes{}, errors.New("missing account address")
+		return mj.JSONBytesFromString{}, errors.New("missing account address")
 	}
 	addrBytes, err := p.parseAnyValueAsByteArray(addrRaw)
 	if err == nil && len(addrBytes) != 32 {
-		return mj.JSONBytes{}, errors.New("account addressis not 32 bytes in length")
+		return mj.JSONBytesFromString{}, errors.New("account addressis not 32 bytes in length")
 	}
-	return mj.JSONBytes{Value: addrBytes, Original: addrRaw}, err
+	return mj.NewJSONBytesFromString(addrBytes, addrRaw), err
 }
 
 func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
@@ -55,12 +55,12 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage key: %w", err)
 				}
-				byteVal, err := p.processAnyValueAsByteArray(storageKvp.Value)
+				byteVal, err := p.processSubTreeAsByteArray(storageKvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage value: %w", err)
 				}
 				stElem := mj.StorageKeyValuePair{
-					Key:   mj.JSONBytes{Value: byteKey, Original: storageKvp.Key},
+					Key:   mj.NewJSONBytesFromString(byteKey, storageKvp.Key),
 					Value: byteVal,
 				}
 				acct.Storage = append(acct.Storage, &stElem)
@@ -150,12 +150,12 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					if err != nil {
 						return nil, fmt.Errorf("invalid account storage key: %w", err)
 					}
-					byteVal, err := p.processAnyValueAsByteArray(storageKvp.Value)
+					byteVal, err := p.processSubTreeAsByteArray(storageKvp.Value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid account storage value: %w", err)
 					}
 					stElem := mj.StorageKeyValuePair{
-						Key:   mj.JSONBytes{Value: byteKey, Original: storageKvp.Key},
+						Key:   mj.NewJSONBytesFromString(byteKey, storageKvp.Key),
 						Value: byteVal,
 					}
 					acct.CheckStorage = append(acct.CheckStorage, &stElem)

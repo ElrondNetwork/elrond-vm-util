@@ -49,20 +49,20 @@ func transactionToTestOJ(tx *mj.Transaction) oj.OJsonObject {
 	transactionOJ.Put("function", stringToOJ(tx.Function))
 	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
 	transactionOJ.Put("value", bigIntToOJ(tx.Value))
-	transactionOJ.Put("to", byteArrayToOJ(tx.To))
+	transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 
 	var argList []oj.OJsonObject
 	for _, arg := range tx.Arguments {
-		argList = append(argList, byteArrayToOJ(arg))
+		argList = append(argList, bytesFromTreeToOJ(arg))
 	}
 	argOJ := oj.OJsonList(argList)
 	transactionOJ.Put("arguments", &argOJ)
 
 	if len(tx.Code.Original) > 0 {
-		transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
+		transactionOJ.Put("contractCode", bytesFromStringToOJ(tx.Code))
 	}
 	transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
-	transactionOJ.Put("from", byteArrayToOJ(tx.From))
+	transactionOJ.Put("from", bytesFromStringToOJ(tx.From))
 
 	return transactionOJ
 }

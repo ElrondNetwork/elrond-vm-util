@@ -4,24 +4,24 @@ import "bytes"
 
 // Account is a json object representing an account.
 type Account struct {
-	Address       JSONBytes
+	Address       JSONBytesFromString
 	Comment       string
 	Nonce         JSONUint64
 	Balance       JSONBigInt
 	Storage       []*StorageKeyValuePair
-	Code          JSONBytes
+	Code          JSONBytesFromString
 	AsyncCallData string
 }
 
 // StorageKeyValuePair is a json key value pair in the storage map.
 type StorageKeyValuePair struct {
-	Key   JSONBytes
-	Value JSONBytes
+	Key   JSONBytesFromString
+	Value JSONBytesFromTree
 }
 
 // CheckAccount is a json object representing checks for an account.
 type CheckAccount struct {
-	Address       JSONBytes
+	Address       JSONBytesFromString
 	Comment       string
 	Nonce         JSONCheckUint64
 	Balance       JSONCheckBigInt
