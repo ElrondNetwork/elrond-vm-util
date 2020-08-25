@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
+	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 	"github.com/stretchr/testify/require"
 )
 
@@ -385,4 +386,38 @@ func TestFile(t *testing.T) {
 	result, err := vi.InterpretString("file:../integrationTests/exampleFile.txt")
 	require.Nil(t, err)
 	require.Equal(t, []byte("hello!"), result)
+}
+
+func TestInterpretSubTree1(t *testing.T) {
+	vi := ValueInterpreter{}
+	jobj, err := oj.ParseOrderedJSON([]byte(`
+		["''part1", "''part2"]
+	`))
+	require.Nil(t, err)
+	result, err := vi.InterpretSubTree(jobj)
+	require.Nil(t, err)
+	require.Equal(t, []byte("part1part2"), result)
+}
+
+func TestInterpretSubTree2(t *testing.T) {
+	vi := ValueInterpreter{}
+	jobj, err := oj.ParseOrderedJSON([]byte(`
+		{
+			"''field1": "u32:5",
+			"''field2": [
+				"''field2elem1",
+				"u64:0",
+				["''field2elem3a", "''field2elem3b"]
+			]
+		}
+	`))
+	require.Nil(t, err)
+	result, err := vi.InterpretSubTree(jobj)
+	require.Nil(t, err)
+	expected := []byte{0x00, 0x00, 0x00, 0x05}
+	expected = append(expected, []byte("field2elem1")...)
+	expected = append(expected, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}...)
+	expected = append(expected, []byte("field2elem3a")...)
+	expected = append(expected, []byte("field2elem3b")...)
+	require.Equal(t, expected, result)
 }
