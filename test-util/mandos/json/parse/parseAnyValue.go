@@ -18,6 +18,15 @@ const addrPrefix = "address:"
 const filePrefix = "file:"
 const keccak256Prefix = "keccak256:"
 
+const u64Prefix = "u64:"
+const u32Prefix = "u32:"
+const u16Prefix = "u16:"
+const u8Prefix = "u8:"
+const i64Prefix = "i64:"
+const i32Prefix = "i32:"
+const i16Prefix = "i16:"
+const i8Prefix = "i8:"
+
 func (p *Parser) parseCheckBytes(obj oj.OJsonObject) (mj.JSONCheckBytes, error) {
 	if IsStar(obj) {
 		// "*" means any value, skip checking it
@@ -119,6 +128,21 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 		return address([]byte(addrName))
 	}
 
+	// fixed width numbers
+	parsed, result, err := p.parseFixedWidthBasicTypes(strRaw)
+	if err != nil {
+		return nil, err
+	}
+	if parsed {
+		return result, nil
+	}
+
+	// general numbers, arbitrary length
+	return p.parseAnyNumberAsByteArray(strRaw, 0)
+}
+
+// targetWidth = 0 means minimum length that can contain the result
+func (p *Parser) parseAnyNumberAsByteArray(strRaw string, targetWidth int) ([]byte, error) {
 	// signed numbers
 	if strRaw[0] == '-' || strRaw[0] == '+' {
 		numberBytes, err := p.parseUnsignedNumberAsByteArray(strRaw[1:])
@@ -129,11 +153,30 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 		if strRaw[0] == '-' {
 			number = number.Neg(number)
 		}
-		return twos.ToBytes(number), nil
+		if targetWidth == 0 {
+			return twos.ToBytes(number), nil
+		}
+
+		return twos.ToBytesOfLength(number, targetWidth)
 	}
 
 	// unsigned numbers
-	return p.parseUnsignedNumberAsByteArray(strRaw)
+	return p.parseUnsignedNumberAsByteArrayOfLength(strRaw, targetWidth)
+}
+
+func (p *Parser) parseUnsignedNumberAsByteArrayOfLength(strRaw string, targetWidth int) ([]byte, error) {
+	numberBytes, err := p.parseUnsignedNumberAsByteArray(strRaw)
+	if err != nil {
+		return []byte{}, err
+	}
+	if targetWidth == 0 {
+		return numberBytes, nil
+	}
+
+	if len(numberBytes) > targetWidth {
+		return []byte{}, fmt.Errorf("representation of %s does not fit in %d bytes", strRaw, targetWidth)
+	}
+	return twos.CopyAlignRight(numberBytes, targetWidth), nil
 }
 
 func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
@@ -170,4 +213,42 @@ func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
 	}
 
 	return result.Bytes(), nil
+}
+
+func (p *Parser) parseFixedWidthBasicTypes(strRaw string) (bool, []byte, error) {
+	if strings.HasPrefix(strRaw, u64Prefix) {
+		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u64Prefix):], 8)
+		return true, r, err
+	}
+	if strings.HasPrefix(strRaw, u32Prefix) {
+		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u32Prefix):], 4)
+		return true, r, err
+	}
+	if strings.HasPrefix(strRaw, u16Prefix) {
+		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u16Prefix):], 2)
+		return true, r, err
+	}
+	if strings.HasPrefix(strRaw, u8Prefix) {
+		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u8Prefix):], 1)
+		return true, r, err
+	}
+
+	if strings.HasPrefix(strRaw, i64Prefix) {
+		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i64Prefix):], 8)
+		return true, r, err
+	}
+	if strings.HasPrefix(strRaw, i32Prefix) {
+		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i32Prefix):], 4)
+		return true, r, err
+	}
+	if strings.HasPrefix(strRaw, i16Prefix) {
+		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i16Prefix):], 2)
+		return true, r, err
+	}
+	if strings.HasPrefix(strRaw, i8Prefix) {
+		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i8Prefix):], 1)
+		return true, r, err
+	}
+
+	return false, []byte{}, nil
 }

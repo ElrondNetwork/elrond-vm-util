@@ -161,6 +161,110 @@ func TestSignedNumber(t *testing.T) {
 	require.Equal(t, []byte{0xfb}, result)
 }
 
+func TestUnsignedFixedWidth(t *testing.T) {
+	p := Parser{}
+	result, err := p.parseAnyValueAsByteArray("u8:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u16:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u32:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u64:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u16:0x1234")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x12, 0x34}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u32:0x1234")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x12, 0x34}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u16:256")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x01, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u8:0b1")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x01}, result)
+
+	result, err = p.parseAnyValueAsByteArray("u64:0b101")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05}, result)
+}
+
+func TestSignedFixedWidth(t *testing.T) {
+	p := Parser{}
+	result, err := p.parseAnyValueAsByteArray("i8:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i16:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i32:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i64:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i8:-1")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i16:-1")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff, 0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i32:-1")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i64:-1")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i8:255") // not completely ok, but we'll let this be for now
+	require.Nil(t, err)                                // it could be argued that this should fail
+	require.Equal(t, []byte{0xff}, result)             // it is however, consistent with the rest of the format
+
+	result, err = p.parseAnyValueAsByteArray("i8:+255")
+	require.NotNil(t, err)
+
+	result, err = p.parseAnyValueAsByteArray("i16:+255")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i8:0xff") // same as for i8:255
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i8:+0xff")
+	require.NotNil(t, err)
+
+	result, err = p.parseAnyValueAsByteArray("i16:+0xff")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0xff}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i64:-256")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i8:-0b101")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xfb}, result)
+}
+
 func TestConcat(t *testing.T) {
 	p := Parser{}
 	result, err := p.parseAnyValueAsByteArray("0x01|5")
@@ -198,6 +302,14 @@ func TestConcat(t *testing.T) {
 	result, err = p.parseAnyValueAsByteArray("0x61|``b")
 	require.Nil(t, err)
 	require.Equal(t, []byte("ab"), result)
+
+	result, err = p.parseAnyValueAsByteArray("i16:0x61|u32:5")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x61, 0x00, 0x00, 0x00, 0x05}, result)
+
+	result, err = p.parseAnyValueAsByteArray("i64:-1|u8:0")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00}, result)
 }
 
 func TestKeccak256(t *testing.T) {
