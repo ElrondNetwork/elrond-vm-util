@@ -198,15 +198,11 @@ func bytesFromTreeToOJ(bytes mj.JSONBytesFromTree) oj.OJsonObject {
 	return bytes.Original
 }
 
-func checkBytesToString(checkBytes mj.JSONCheckBytes) string {
-	if len(checkBytes.Original) == 0 && len(checkBytes.Value) > 0 {
-		checkBytes.Original = hex.EncodeToString(checkBytes.Value)
+func checkBytesToOJ(checkBytes mj.JSONCheckBytes) oj.OJsonObject {
+	if checkBytes.OriginalEmpty() && len(checkBytes.Value) > 0 {
+		checkBytes.Original = &oj.OJsonString{Value: hex.EncodeToString(checkBytes.Value)}
 	}
 	return checkBytes.Original
-}
-
-func checkBytesToOJ(checkBytes mj.JSONCheckBytes) oj.OJsonObject {
-	return &oj.OJsonString{Value: checkBytesToString(checkBytes)}
 }
 
 func uint64ToOJ(i mj.JSONUint64) oj.OJsonObject {

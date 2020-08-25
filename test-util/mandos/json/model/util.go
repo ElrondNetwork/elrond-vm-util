@@ -36,14 +36,11 @@ func JSONBytesFromStringValues(jbs []JSONBytesFromString) [][]byte {
 	return result
 }
 
-// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
-func JSONCheckBytesString(jcbs []JSONCheckBytes) string {
-	str := "["
-	for i, jcb := range jcbs {
-		if i > 0 {
-			str += ", "
-		}
-		str += "\"" + jcb.Original + "\""
+// JSONBytesFromTreeValues extracts values from a slice of JSONBytesFromTree into a list
+func JSONBytesFromTreeValues(jbs []JSONBytesFromTree) [][]byte {
+	result := make([][]byte, len(jbs))
+	for i, jb := range jbs {
+		result[i] = jb.Value
 	}
-	return str + "]"
+	return result
 }
