@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
 	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 	mjwrite "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/write"
 	"github.com/stretchr/testify/require"
@@ -30,11 +31,10 @@ func TestWriteTest(t *testing.T) {
 	contents, err := loadExampleFile("example.test.json")
 	require.Nil(t, err)
 
-	p := mjparse.Parser{
-		FileResolver: mjparse.NewDefaultFileResolver().ReplacePath(
+	p := mjparse.NewParser(
+		fr.NewDefaultFileResolver().ReplacePath(
 			"smart-contract.wasm",
-			"exampleFile.txt"),
-	}
+			"exampleFile.txt"))
 
 	testTopLevel, parseErr := p.ParseTestFile(contents)
 	require.Nil(t, parseErr)

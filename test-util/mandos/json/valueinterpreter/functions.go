@@ -1,4 +1,4 @@
-package mandosjsonparse
+package mandosvalueinterpreter
 
 import (
 	"golang.org/x/crypto/sha3"

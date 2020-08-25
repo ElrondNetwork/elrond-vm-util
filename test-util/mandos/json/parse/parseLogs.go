@@ -38,7 +38,7 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) 
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
 				var identifierValue []byte
-				identifierValue, err = p.parseAnyValueAsByteArray(strVal)
+				identifierValue, err = p.ValueInterpreter.InterpretString(strVal)
 				if err != nil {
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
@@ -52,7 +52,7 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) 
 					return nil, fmt.Errorf("unmarshalled log entry topics is not big int list: %w", err)
 				}
 			case "data":
-				logEntry.Data, err = p.processAnyValueAsByteArray(kvp.Value)
+				logEntry.Data, err = p.processStringAsByteArray(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("cannot parse log entry data: %w", err)
 				}

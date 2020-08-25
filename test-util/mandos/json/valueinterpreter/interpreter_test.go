@@ -1,376 +1,377 @@
-package mandosjsonparse
+package mandosvalueinterpreter
 
 import (
 	"encoding/hex"
 	"testing"
 
+	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEmpty(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 }
 
 func TestBool(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("true")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("true")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01}, result)
 
-	result, err = p.parseAnyValueAsByteArray("false")
+	result, err = vi.InterpretString("false")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 }
 
 func TestString(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("``abcdefg")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("``abcdefg")
 	require.Nil(t, err)
 	require.Equal(t, []byte("abcdefg"), result)
 
-	result, err = p.parseAnyValueAsByteArray("``")
+	result, err = vi.InterpretString("``")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("```")
+	result, err = vi.InterpretString("```")
 	require.Nil(t, err)
 	require.Equal(t, []byte("`"), result)
 
-	result, err = p.parseAnyValueAsByteArray("`` ")
+	result, err = vi.InterpretString("`` ")
 	require.Nil(t, err)
 	require.Equal(t, []byte(" "), result)
 
-	result, err = p.parseAnyValueAsByteArray("''abcdefg")
+	result, err = vi.InterpretString("''abcdefg")
 	require.Nil(t, err)
 	require.Equal(t, []byte("abcdefg"), result)
 
-	result, err = p.parseAnyValueAsByteArray("''")
+	result, err = vi.InterpretString("''")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("'''")
+	result, err = vi.InterpretString("'''")
 	require.Nil(t, err)
 	require.Equal(t, []byte("'"), result)
 
-	result, err = p.parseAnyValueAsByteArray("'' ")
+	result, err = vi.InterpretString("'' ")
 	require.Nil(t, err)
 	require.Equal(t, []byte(" "), result)
 
-	result, err = p.parseAnyValueAsByteArray("''``")
+	result, err = vi.InterpretString("''``")
 	require.Nil(t, err)
 	require.Equal(t, []byte("``"), result)
 
-	result, err = p.parseAnyValueAsByteArray("``''")
+	result, err = vi.InterpretString("``''")
 	require.Nil(t, err)
 	require.Equal(t, []byte("''"), result)
 
-	result, err = p.parseAnyValueAsByteArray("str:abcdefg")
+	result, err = vi.InterpretString("str:abcdefg")
 	require.Nil(t, err)
 	require.Equal(t, []byte("abcdefg"), result)
 
-	result, err = p.parseAnyValueAsByteArray("str:")
+	result, err = vi.InterpretString("str:")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 }
 
 func TestAddress(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("address:")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("address:")
 	require.Nil(t, err)
 	require.Equal(t, []byte("________________________________"), result)
 
-	result, err = p.parseAnyValueAsByteArray("address:a")
+	result, err = vi.InterpretString("address:a")
 	require.Nil(t, err)
 	require.Equal(t, []byte("a_______________________________"), result)
 
-	result, err = p.parseAnyValueAsByteArray("address:an_address")
+	result, err = vi.InterpretString("address:an_address")
 	require.Nil(t, err)
 	require.Equal(t, []byte("an_address______________________"), result)
 
-	result, err = p.parseAnyValueAsByteArray("address:12345678901234567890123456789012")
+	result, err = vi.InterpretString("address:12345678901234567890123456789012")
 	require.Nil(t, err)
 	require.Equal(t, []byte("12345678901234567890123456789012"), result)
 
-	result, err = p.parseAnyValueAsByteArray("address:123456789012345678901234567890123")
+	result, err = vi.InterpretString("address:123456789012345678901234567890123")
 	require.Nil(t, err)
 	require.Equal(t, []byte("12345678901234567890123456789012"), result)
 }
 
 func TestUnsignedNumber(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("0x1234")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("0x1234")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x12, 0x34}, result)
 
-	result, err = p.parseAnyValueAsByteArray("0x")
+	result, err = vi.InterpretString("0x")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("0")
+	result, err = vi.InterpretString("0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("12")
+	result, err = vi.InterpretString("12")
 	require.Nil(t, err)
 	require.Equal(t, []byte{12}, result)
 
-	result, err = p.parseAnyValueAsByteArray("256")
+	result, err = vi.InterpretString("256")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("0b1")
+	result, err = vi.InterpretString("0b1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01}, result)
 
-	result, err = p.parseAnyValueAsByteArray("0b101")
+	result, err = vi.InterpretString("0b101")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x05}, result)
 }
 
 func TestSignedNumber(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("-1")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("-1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("255")
+	result, err = vi.InterpretString("255")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("+255")
+	result, err = vi.InterpretString("+255")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("0xff")
+	result, err = vi.InterpretString("0xff")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("+0xff")
+	result, err = vi.InterpretString("+0xff")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("-256")
+	result, err = vi.InterpretString("-256")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("-0b101")
+	result, err = vi.InterpretString("-0b101")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xfb}, result)
 }
 
 func TestUnsignedFixedWidth(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("u8:0")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("u8:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u16:0")
+	result, err = vi.InterpretString("u16:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u32:0")
+	result, err = vi.InterpretString("u32:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u64:0")
+	result, err = vi.InterpretString("u64:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u16:0x1234")
+	result, err = vi.InterpretString("u16:0x1234")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x12, 0x34}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u32:0x1234")
+	result, err = vi.InterpretString("u32:0x1234")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x12, 0x34}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u16:256")
+	result, err = vi.InterpretString("u16:256")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u8:0b1")
+	result, err = vi.InterpretString("u8:0b1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01}, result)
 
-	result, err = p.parseAnyValueAsByteArray("u64:0b101")
+	result, err = vi.InterpretString("u64:0b101")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05}, result)
 }
 
 func TestSignedFixedWidth(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("i8:0")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("i8:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i16:0")
+	result, err = vi.InterpretString("i16:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i32:0")
+	result, err = vi.InterpretString("i32:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i64:0")
+	result, err = vi.InterpretString("i64:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i8:-1")
+	result, err = vi.InterpretString("i8:-1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i16:-1")
+	result, err = vi.InterpretString("i16:-1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i32:-1")
+	result, err = vi.InterpretString("i32:-1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i64:-1")
+	result, err = vi.InterpretString("i64:-1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i8:255") // not completely ok, but we'll let this be for now
-	require.Nil(t, err)                                // it could be argued that this should fail
-	require.Equal(t, []byte{0xff}, result)             // it is however, consistent with the rest of the format
+	result, err = vi.InterpretString("i8:255") // not completely ok, but we'll let this be for now
+	require.Nil(t, err)                        // it could be argued that this should fail
+	require.Equal(t, []byte{0xff}, result)     // it is however, consistent with the rest of the format
 
-	result, err = p.parseAnyValueAsByteArray("i8:+255")
+	result, err = vi.InterpretString("i8:+255")
 	require.NotNil(t, err)
 
-	result, err = p.parseAnyValueAsByteArray("i16:+255")
+	result, err = vi.InterpretString("i16:+255")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i8:0xff") // same as for i8:255
+	result, err = vi.InterpretString("i8:0xff") // same as for i8:255
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i8:+0xff")
+	result, err = vi.InterpretString("i8:+0xff")
 	require.NotNil(t, err)
 
-	result, err = p.parseAnyValueAsByteArray("i16:+0xff")
+	result, err = vi.InterpretString("i16:+0xff")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0xff}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i64:-256")
+	result, err = vi.InterpretString("i64:-256")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i8:-0b101")
+	result, err = vi.InterpretString("i8:-0b101")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xfb}, result)
 }
 
 func TestConcat(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("0x01|5")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("0x01|5")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01, 0x05}, result)
 
-	result, err = p.parseAnyValueAsByteArray("|||0x01|5||||")
+	result, err = vi.InterpretString("|||0x01|5||||")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01, 0x05}, result)
 
-	result, err = p.parseAnyValueAsByteArray("|")
+	result, err = vi.InterpretString("|")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("|||||||")
+	result, err = vi.InterpretString("|||||||")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("|0")
+	result, err = vi.InterpretString("|0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 
-	result, err = p.parseAnyValueAsByteArray("``a|``b")
+	result, err = vi.InterpretString("``a|``b")
 	require.Nil(t, err)
 	require.Equal(t, []byte("ab"), result)
 
-	result, err = p.parseAnyValueAsByteArray("``a|str:b")
+	result, err = vi.InterpretString("``a|str:b")
 	require.Nil(t, err)
 	require.Equal(t, []byte("ab"), result)
 
-	result, err = p.parseAnyValueAsByteArray("``a|0x62")
+	result, err = vi.InterpretString("``a|0x62")
 	require.Nil(t, err)
 	require.Equal(t, []byte("ab"), result)
 
-	result, err = p.parseAnyValueAsByteArray("0x61|``b")
+	result, err = vi.InterpretString("0x61|``b")
 	require.Nil(t, err)
 	require.Equal(t, []byte("ab"), result)
 
-	result, err = p.parseAnyValueAsByteArray("i16:0x61|u32:5")
+	result, err = vi.InterpretString("i16:0x61|u32:5")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x61, 0x00, 0x00, 0x00, 0x05}, result)
 
-	result, err = p.parseAnyValueAsByteArray("i64:-1|u8:0")
+	result, err = vi.InterpretString("i64:-1|u8:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00}, result)
 }
 
 func TestKeccak256(t *testing.T) {
-	p := Parser{}
-	result, err := p.parseAnyValueAsByteArray("keccak256:0x01|5")
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("keccak256:0x01|5")
 	require.Nil(t, err)
 	expected, _ := keccak256([]byte{0x01, 0x05})
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:|||0x01|5||||")
+	result, err = vi.InterpretString("keccak256:|||0x01|5||||")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte{0x01, 0x05})
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:|")
+	result, err = vi.InterpretString("keccak256:|")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte{})
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:|||||||")
+	result, err = vi.InterpretString("keccak256:|||||||")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte{})
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:|0")
+	result, err = vi.InterpretString("keccak256:|0")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte{})
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:``a|``b")
+	result, err = vi.InterpretString("keccak256:``a|``b")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte("ab"))
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:``a|0x62")
+	result, err = vi.InterpretString("keccak256:``a|0x62")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte("ab"))
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:0x61|``b")
+	result, err = vi.InterpretString("keccak256:0x61|``b")
 	require.Nil(t, err)
 	expected, _ = keccak256([]byte("ab"))
 	require.Equal(t, expected, result)
 
 	// some values from the old ERC20 tests
-	result, err = p.parseAnyValueAsByteArray("keccak256:1|0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000")
+	result, err = vi.InterpretString("keccak256:1|0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000")
 	require.Nil(t, err)
 	expected, _ = hex.DecodeString("19efaebcc296cffac396adb4a60d54c05eff43926a6072498a618e943908efe1")
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:1|0x7777777777777777777707777777777777777777777777177777777777771234")
+	result, err = vi.InterpretString("keccak256:1|0x7777777777777777777707777777777777777777777777177777777777771234")
 	require.Nil(t, err)
 	expected, _ = hex.DecodeString("a3da7395b9df9b4a0ad4ce2fd40d2db4c5b231dbc2a19ce9bafcbc2233dc1b0a")
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:1|0x5555555555555555555505555555555555555555555555155555555555551234")
+	result, err = vi.InterpretString("keccak256:1|0x5555555555555555555505555555555555555555555555155555555555551234")
 	require.Nil(t, err)
 	expected, _ = hex.DecodeString("648147902a606bf61e05b8b9d828540be393187d2c12a271b45315628f8b05b9")
 	require.Equal(t, expected, result)
 
-	result, err = p.parseAnyValueAsByteArray("keccak256:2|0x7777777777777777777707777777777777777777777777177777777777771234|0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000")
+	result, err = vi.InterpretString("keccak256:2|0x7777777777777777777707777777777777777777777777177777777777771234|0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000")
 	require.Nil(t, err)
 	expected, _ = hex.DecodeString("e314ce9b5b28a5927ee30ba28b67ee27ad8779e1101baf4224590c8f1e287891")
 	require.Equal(t, expected, result)
@@ -378,10 +379,10 @@ func TestKeccak256(t *testing.T) {
 }
 
 func TestFile(t *testing.T) {
-	p := Parser{
-		FileResolver: NewDefaultFileResolver(),
+	vi := ValueInterpreter{
+		FileResolver: fr.NewDefaultFileResolver(),
 	}
-	result, err := p.parseAnyValueAsByteArray("file:../integrationTests/exampleFile.txt")
+	result, err := vi.InterpretString("file:../integrationTests/exampleFile.txt")
 	require.Nil(t, err)
 	require.Equal(t, []byte("hello!"), result)
 }

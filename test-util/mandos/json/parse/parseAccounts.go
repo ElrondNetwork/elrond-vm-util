@@ -12,7 +12,7 @@ func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytesFromString, er
 	if len(addrRaw) == 0 {
 		return mj.JSONBytesFromString{}, errors.New("missing account address")
 	}
-	addrBytes, err := p.parseAnyValueAsByteArray(addrRaw)
+	addrBytes, err := p.ValueInterpreter.InterpretString(addrRaw)
 	if err == nil && len(addrBytes) != 32 {
 		return mj.JSONBytesFromString{}, errors.New("account addressis not 32 bytes in length")
 	}
@@ -51,7 +51,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				return nil, errors.New("invalid account storage")
 			}
 			for _, storageKvp := range storageMap.OrderedKV {
-				byteKey, err := p.parseAnyValueAsByteArray(storageKvp.Key)
+				byteKey, err := p.ValueInterpreter.InterpretString(storageKvp.Key)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage key: %w", err)
 				}
@@ -66,7 +66,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				acct.Storage = append(acct.Storage, &stElem)
 			}
 		case "code":
-			acct.Code, err = p.processAnyValueAsByteArray(kvp.Value)
+			acct.Code, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
@@ -146,7 +146,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					return nil, errors.New("invalid account storage")
 				}
 				for _, storageKvp := range storageMap.OrderedKV {
-					byteKey, err := p.parseAnyValueAsByteArray(storageKvp.Key)
+					byteKey, err := p.ValueInterpreter.InterpretString(storageKvp.Key)
 					if err != nil {
 						return nil, fmt.Errorf("invalid account storage key: %w", err)
 					}

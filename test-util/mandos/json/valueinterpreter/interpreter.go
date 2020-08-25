@@ -1,4 +1,4 @@
-package mandosjsonparse
+package mandosvalueinterpreter
 
 import (
 	"encoding/hex"
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
 	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
@@ -27,52 +27,26 @@ const i32Prefix = "i32:"
 const i16Prefix = "i16:"
 const i8Prefix = "i8:"
 
-func (p *Parser) parseCheckBytes(obj oj.OJsonObject) (mj.JSONCheckBytes, error) {
-	if IsStar(obj) {
-		// "*" means any value, skip checking it
-		return mj.JSONCheckBytes{
-			Value:    nil,
-			IsStar:   true,
-			Original: "*"}, nil
-	}
-
-	jb, err := p.processAnyValueAsByteArray(obj)
-	if err != nil {
-		return mj.JSONCheckBytes{}, err
-	}
-	return mj.JSONCheckBytes{
-		Value:    jb.Value,
-		IsStar:   false,
-		Original: jb.Original,
-	}, nil
+// ValueInterpreter provides context for computing Mandos values.
+type ValueInterpreter struct {
+	FileResolver fr.FileResolver
 }
 
-func (p *Parser) processAnyValueAsByteArray(obj oj.OJsonObject) (mj.JSONBytesFromString, error) {
-	strVal, err := p.parseString(obj)
-	if err != nil {
-		return mj.JSONBytesFromString{}, err
-	}
-	result, err := p.parseAnyValueAsByteArray(strVal)
-	return mj.NewJSONBytesFromString(result, strVal), err
-}
-
-func (p *Parser) processSubTreeAsByteArray(obj oj.OJsonObject) (mj.JSONBytesFromTree, error) {
-	value, err := p.computeSubTreeValue(obj)
-	return mj.JSONBytesFromTree{
-		Value:    value,
-		Original: obj,
-	}, err
-}
-
-func (p *Parser) computeSubTreeValue(obj oj.OJsonObject) ([]byte, error) {
+// InterpretSubTree attempts to produce a value based on a JSON subtree.
+// Subtrees are composed of strings, lists and maps.
+// The idea is to intuitively represent serialized objects.
+// Lists are evaluated by concatenating their items' representations.
+// Maps are evaluated by concatenating their values' representations (keys are ignored).
+// See InterpretString on how strings are being interpreted.
+func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error) {
 	if str, isStr := obj.(*oj.OJsonString); isStr {
-		return p.parseAnyValueAsByteArray(str.Value)
+		return vi.InterpretString(str.Value)
 	}
 
 	if list, isList := obj.(*oj.OJsonList); isList {
 		var concat []byte
 		for _, item := range list.AsList() {
-			value, err := p.computeSubTreeValue(item)
+			value, err := vi.InterpretSubTree(item)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -85,7 +59,7 @@ func (p *Parser) computeSubTreeValue(obj oj.OJsonObject) ([]byte, error) {
 		var concat []byte
 		for _, kvp := range mp.OrderedKV {
 			// keys are ignored, they do not form the value but act like documentation
-			value, err := p.computeSubTreeValue(kvp.Value)
+			value, err := vi.InterpretSubTree(kvp.Value)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -97,7 +71,18 @@ func (p *Parser) computeSubTreeValue(obj oj.OJsonObject) ([]byte, error) {
 	return []byte{}, errors.New("cannot interpret given JSON subtree as value")
 }
 
-func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
+// InterpretString resolves a string to a byte slice according to the Mandos value format.
+// Supported rules are:
+// - numbers: decimal, hex, binary, signed/unsigned
+// - fixed length numbers: "u32:5", "i8:-3", etc.
+// - ascii strings as "str:...", "``...", "''..."
+// - "true"/"false"
+// - "address:..."
+// - "file:..."
+// - "keccak256:..."
+// - concatenation using |
+//
+func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	if len(strRaw) == 0 {
 		return []byte{}, nil
 	}
@@ -105,10 +90,10 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	// file contents
 	// TODO: make this part of a proper parser
 	if strings.HasPrefix(strRaw, filePrefix) {
-		if p.FileResolver == nil {
+		if vi.FileResolver == nil {
 			return []byte{}, errors.New("parser FileResolver not provided")
 		}
-		fileContents, err := p.FileResolver.ResolveFileValue(strRaw[len(filePrefix):])
+		fileContents, err := vi.FileResolver.ResolveFileValue(strRaw[len(filePrefix):])
 		if err != nil {
 			return []byte{}, err
 		}
@@ -118,7 +103,7 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	// keccak256
 	// TODO: make this part of a proper parser
 	if strings.HasPrefix(strRaw, keccak256Prefix) {
-		arg, err := p.parseAnyValueAsByteArray(strRaw[len(keccak256Prefix):])
+		arg, err := vi.InterpretString(strRaw[len(keccak256Prefix):])
 		if err != nil {
 			return []byte{}, fmt.Errorf("cannot parse keccak256 argument: %w", err)
 		}
@@ -135,7 +120,7 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	if len(parts) > 1 {
 		concat := make([]byte, 0)
 		for _, part := range parts {
-			eval, err := p.parseAnyValueAsByteArray(part)
+			eval, err := vi.InterpretString(part)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -167,7 +152,7 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	}
 
 	// fixed width numbers
-	parsed, result, err := p.parseFixedWidthBasicTypes(strRaw)
+	parsed, result, err := vi.tryInterpretFixedWidth(strRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -176,14 +161,14 @@ func (p *Parser) parseAnyValueAsByteArray(strRaw string) ([]byte, error) {
 	}
 
 	// general numbers, arbitrary length
-	return p.parseAnyNumberAsByteArray(strRaw, 0)
+	return vi.interpretNumber(strRaw, 0)
 }
 
 // targetWidth = 0 means minimum length that can contain the result
-func (p *Parser) parseAnyNumberAsByteArray(strRaw string, targetWidth int) ([]byte, error) {
+func (vi *ValueInterpreter) interpretNumber(strRaw string, targetWidth int) ([]byte, error) {
 	// signed numbers
 	if strRaw[0] == '-' || strRaw[0] == '+' {
-		numberBytes, err := p.parseUnsignedNumberAsByteArray(strRaw[1:])
+		numberBytes, err := vi.interpretUnsignedNumber(strRaw[1:])
 		if err != nil {
 			return []byte{}, err
 		}
@@ -199,25 +184,14 @@ func (p *Parser) parseAnyNumberAsByteArray(strRaw string, targetWidth int) ([]by
 	}
 
 	// unsigned numbers
-	return p.parseUnsignedNumberAsByteArrayOfLength(strRaw, targetWidth)
-}
-
-func (p *Parser) parseUnsignedNumberAsByteArrayOfLength(strRaw string, targetWidth int) ([]byte, error) {
-	numberBytes, err := p.parseUnsignedNumberAsByteArray(strRaw)
-	if err != nil {
-		return []byte{}, err
-	}
 	if targetWidth == 0 {
-		return numberBytes, nil
+		return vi.interpretUnsignedNumber(strRaw)
 	}
 
-	if len(numberBytes) > targetWidth {
-		return []byte{}, fmt.Errorf("representation of %s does not fit in %d bytes", strRaw, targetWidth)
-	}
-	return twos.CopyAlignRight(numberBytes, targetWidth), nil
+	return vi.interpretUnsignedNumberFixedWidth(strRaw, targetWidth)
 }
 
-func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
+func (vi *ValueInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
 	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
 
@@ -253,38 +227,53 @@ func (p *Parser) parseUnsignedNumberAsByteArray(strRaw string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func (p *Parser) parseFixedWidthBasicTypes(strRaw string) (bool, []byte, error) {
+func (vi *ValueInterpreter) interpretUnsignedNumberFixedWidth(strRaw string, targetWidth int) ([]byte, error) {
+	numberBytes, err := vi.interpretUnsignedNumber(strRaw)
+	if err != nil {
+		return []byte{}, err
+	}
+	if targetWidth == 0 {
+		return numberBytes, nil
+	}
+
+	if len(numberBytes) > targetWidth {
+		return []byte{}, fmt.Errorf("representation of %s does not fit in %d bytes", strRaw, targetWidth)
+	}
+	return twos.CopyAlignRight(numberBytes, targetWidth), nil
+}
+
+func (vi *ValueInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte, error) {
 	if strings.HasPrefix(strRaw, u64Prefix) {
-		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u64Prefix):], 8)
+		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u64Prefix):], 8)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, u32Prefix) {
-		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u32Prefix):], 4)
+		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u32Prefix):], 4)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, u16Prefix) {
-		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u16Prefix):], 2)
+		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u16Prefix):], 2)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, u8Prefix) {
-		r, err := p.parseUnsignedNumberAsByteArrayOfLength(strRaw[len(u8Prefix):], 1)
+		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u8Prefix):], 1)
 		return true, r, err
 	}
 
 	if strings.HasPrefix(strRaw, i64Prefix) {
-		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i64Prefix):], 8)
+		r, err := vi.interpretNumber(strRaw[len(i64Prefix):], 8)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, i32Prefix) {
-		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i32Prefix):], 4)
+		r, err := vi.interpretNumber(strRaw[len(i32Prefix):], 4)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, i16Prefix) {
-		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i16Prefix):], 2)
+		r, err := vi.interpretNumber(strRaw[len(i16Prefix):], 2)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, i8Prefix) {
-		r, err := p.parseAnyNumberAsByteArray(strRaw[len(i8Prefix):], 1)
+		r, err := vi.interpretNumber(strRaw[len(i8Prefix):], 1)
 		return true, r, err
 	}
 

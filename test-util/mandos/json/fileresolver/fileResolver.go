@@ -1,4 +1,4 @@
-package mandosjsonparse
+package mandosfileresolver
 
 // FileResolver resolves Mandos values starting with "file:"
 type FileResolver interface {

@@ -30,7 +30,7 @@ func (p *Parser) parseByteArrayList(obj interface{}) ([]mj.JSONBytesFromString, 
 	}
 	var result []mj.JSONBytesFromString
 	for _, elemRaw := range listRaw.AsList() {
-		ba, err := p.processAnyValueAsByteArray(elemRaw)
+		ba, err := p.processStringAsByteArray(elemRaw)
 		if err != nil {
 			return nil, err
 		}

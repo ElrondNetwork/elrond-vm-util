@@ -1,4 +1,4 @@
-package mandosjsonparse
+package mandosfileresolver
 
 import (
 	"io/ioutil"
