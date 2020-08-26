@@ -23,14 +23,30 @@ func (p *Parser) processStringList(obj interface{}) ([]string, error) {
 	return result, nil
 }
 
-func (p *Parser) parseByteArrayList(obj interface{}) ([]mj.JSONBytes, error) {
+func (p *Parser) parseByteArrayList(obj interface{}) ([]mj.JSONBytesFromString, error) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return nil, errors.New("not a JSON list")
 	}
-	var result []mj.JSONBytes
+	var result []mj.JSONBytesFromString
 	for _, elemRaw := range listRaw.AsList() {
-		ba, err := p.processAnyValueAsByteArray(elemRaw)
+		ba, err := p.processStringAsByteArray(elemRaw)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, ba)
+	}
+	return result, nil
+}
+
+func (p *Parser) parseSubTreeList(obj interface{}) ([]mj.JSONBytesFromTree, error) {
+	listRaw, listOk := obj.(*oj.OJsonList)
+	if !listOk {
+		return nil, errors.New("not a JSON list")
+	}
+	var result []mj.JSONBytesFromTree
+	for _, elemRaw := range listRaw.AsList() {
+		ba, err := p.processSubTreeAsByteArray(elemRaw)
 		if err != nil {
 			return nil, err
 		}

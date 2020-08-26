@@ -1,4 +1,4 @@
-package mandosjsonparse
+package mandosfileresolver
 
 import (
 	"io/ioutil"
@@ -26,6 +26,14 @@ func NewDefaultFileResolver() *DefaultFileResolver {
 func (fr *DefaultFileResolver) ReplacePath(pathInTest, actualPath string) *DefaultFileResolver {
 	fr.contractPathReplacements[pathInTest] = actualPath
 	return fr
+}
+
+// Clone creates new instance of the same type.
+func (fr *DefaultFileResolver) Clone() FileResolver {
+	return &DefaultFileResolver{
+		contextPath:              fr.contextPath,
+		contractPathReplacements: fr.contractPathReplacements,
+	}
 }
 
 // SetContext sets directory where the test runs, to help resolve relative paths.

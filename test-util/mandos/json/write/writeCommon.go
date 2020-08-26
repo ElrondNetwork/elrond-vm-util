@@ -19,15 +19,15 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		acctOJ.Put("balance", bigIntToOJ(account.Balance))
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
-			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
+			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
 		}
 		acctOJ.Put("storage", storageOJ)
-		acctOJ.Put("code", byteArrayToOJ(account.Code))
+		acctOJ.Put("code", bytesFromStringToOJ(account.Code))
 		if len(account.AsyncCallData) > 0 {
 			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
 		}
 
-		acctsOJ.Put(byteArrayToString(account.Address), acctOJ)
+		acctsOJ.Put(bytesFromStringToString(account.Address), acctOJ)
 	}
 
 	return acctsOJ
@@ -48,7 +48,7 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		}
 		storageOJ := oj.NewMap()
 		for _, st := range checkAccount.CheckStorage {
-			storageOJ.Put(byteArrayToString(st.Key), byteArrayToOJ(st.Value))
+			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
 		}
 		if checkAccount.IgnoreStorage {
 			acctOJ.Put("storage", stringToOJ("*"))
@@ -62,7 +62,7 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 			acctOJ.Put("asyncCallData", checkBytesToOJ(checkAccount.AsyncCallData))
 		}
 
-		acctsOJ.Put(byteArrayToString(checkAccount.Address), acctOJ)
+		acctsOJ.Put(bytesFromStringToString(checkAccount.Address), acctOJ)
 	}
 
 	if checkAccounts.OtherAccountsAllowed {
@@ -72,10 +72,10 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 	return acctsOJ
 }
 
-func blockHashesToOJ(blockHashes []mj.JSONBytes) oj.OJsonObject {
+func blockHashesToOJ(blockHashes []mj.JSONBytesFromString) oj.OJsonObject {
 	var blockhashesList []oj.OJsonObject
 	for _, blh := range blockHashes {
-		blockhashesList = append(blockhashesList, byteArrayToOJ(blh))
+		blockhashesList = append(blockhashesList, bytesFromStringToOJ(blh))
 	}
 	blockhashesOJ := oj.OJsonList(blockhashesList)
 	return &blockhashesOJ
@@ -124,17 +124,17 @@ func LogToString(logEntry *mj.LogEntry) string {
 
 func logToOJ(logEntry *mj.LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
-	logOJ.Put("address", byteArrayToOJ(logEntry.Address))
-	logOJ.Put("identifier", byteArrayToOJ(logEntry.Identifier))
+	logOJ.Put("address", bytesFromStringToOJ(logEntry.Address))
+	logOJ.Put("identifier", bytesFromStringToOJ(logEntry.Identifier))
 
 	var topicsList []oj.OJsonObject
 	for _, topic := range logEntry.Topics {
-		topicsList = append(topicsList, byteArrayToOJ(topic))
+		topicsList = append(topicsList, bytesFromStringToOJ(topic))
 	}
 	topicsOJ := oj.OJsonList(topicsList)
 	logOJ.Put("topics", &topicsOJ)
 
-	logOJ.Put("data", byteArrayToOJ(logEntry.Data))
+	logOJ.Put("data", bytesFromStringToOJ(logEntry.Data))
 
 	return logOJ
 }
@@ -180,26 +180,29 @@ func checkBigIntToOJ(i mj.JSONCheckBigInt) oj.OJsonObject {
 	return &oj.OJsonString{Value: i.Original}
 }
 
-func byteArrayToString(byteArray mj.JSONBytes) string {
-	if len(byteArray.Original) == 0 && len(byteArray.Value) > 0 {
-		byteArray.Original = hex.EncodeToString(byteArray.Value)
+func bytesFromStringToString(bytes mj.JSONBytesFromString) string {
+	if len(bytes.Original) == 0 && len(bytes.Value) > 0 {
+		bytes.Original = hex.EncodeToString(bytes.Value)
 	}
-	return byteArray.Original
+	return bytes.Original
 }
 
-func byteArrayToOJ(byteArray mj.JSONBytes) oj.OJsonObject {
-	return &oj.OJsonString{Value: byteArrayToString(byteArray)}
+func bytesFromStringToOJ(bytes mj.JSONBytesFromString) oj.OJsonObject {
+	return &oj.OJsonString{Value: bytesFromStringToString(bytes)}
 }
 
-func checkBytesToString(checkBytes mj.JSONCheckBytes) string {
-	if len(checkBytes.Original) == 0 && len(checkBytes.Value) > 0 {
-		checkBytes.Original = hex.EncodeToString(checkBytes.Value)
+func bytesFromTreeToOJ(bytes mj.JSONBytesFromTree) oj.OJsonObject {
+	if bytes.OriginalEmpty() {
+		bytes.Original = &oj.OJsonString{Value: hex.EncodeToString(bytes.Value)}
 	}
-	return checkBytes.Original
+	return bytes.Original
 }
 
 func checkBytesToOJ(checkBytes mj.JSONCheckBytes) oj.OJsonObject {
-	return &oj.OJsonString{Value: checkBytesToString(checkBytes)}
+	if checkBytes.OriginalEmpty() && len(checkBytes.Value) > 0 {
+		checkBytes.Original = &oj.OJsonString{Value: hex.EncodeToString(checkBytes.Value)}
+	}
+	return checkBytes.Original
 }
 
 func uint64ToOJ(i mj.JSONUint64) oj.OJsonObject {

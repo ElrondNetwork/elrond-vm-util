@@ -15,9 +15,9 @@ type Step interface {
 
 // NewAddressMock allows tests to specify what new addresses to generate
 type NewAddressMock struct {
-	CreatorAddress JSONBytes
+	CreatorAddress JSONBytesFromString
 	CreatorNonce   JSONUint64
-	NewAddress     JSONBytes
+	NewAddress     JSONBytesFromString
 }
 
 // BlockInfo contains data for the block info hooks
@@ -39,7 +39,7 @@ type SetStateStep struct {
 	Accounts          []*Account
 	PreviousBlockInfo *BlockInfo
 	CurrentBlockInfo  *BlockInfo
-	BlockHashes       []JSONBytes
+	BlockHashes       []JSONBytesFromString
 	NewAddressMocks   []*NewAddressMock
 }
 

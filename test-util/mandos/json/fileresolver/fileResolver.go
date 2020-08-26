@@ -1,7 +1,10 @@
-package mandosjsonparse
+package mandosfileresolver
 
-// FileResolver resolves values starting with "file:"
+// FileResolver resolves Mandos values starting with "file:"
 type FileResolver interface {
+	// Clone creates new instance of the same type.
+	Clone() FileResolver
+
 	// SetContext sets directory where the test runs, to help resolve relative paths.
 	SetContext(contextPath string)
 

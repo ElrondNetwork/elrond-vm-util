@@ -1,6 +1,7 @@
 package mandoscontroller
 
 import (
+	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
 	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 )
@@ -13,7 +14,7 @@ type ScenarioExecutor interface {
 	// ExecuteScenario executes the scenario and checks if it passed. Failure is signaled by returning an error.
 	// The FileResolver helps with resolving external steps.
 	// TODO: group into a "execution context" param.
-	ExecuteScenario(*mj.Scenario, mjparse.FileResolver) error
+	ExecuteScenario(*mj.Scenario, fr.FileResolver) error
 }
 
 // ScenarioRunner is a component that can run json scenarios, using a provided executor.
@@ -23,11 +24,9 @@ type ScenarioRunner struct {
 }
 
 // NewScenarioRunner creates new ScenarioRunner instance.
-func NewScenarioRunner(executor ScenarioExecutor, fileResolver mjparse.FileResolver) *ScenarioRunner {
+func NewScenarioRunner(executor ScenarioExecutor, fileResolver fr.FileResolver) *ScenarioRunner {
 	return &ScenarioRunner{
 		Executor: executor,
-		Parser: mjparse.Parser{
-			FileResolver: fileResolver,
-		},
+		Parser:   mjparse.NewParser(fileResolver),
 	}
 }

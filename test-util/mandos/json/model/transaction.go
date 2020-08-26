@@ -38,11 +38,11 @@ type Transaction struct {
 	Type      TransactionType
 	Nonce     JSONUint64
 	Value     JSONBigInt
-	From      JSONBytes
-	To        JSONBytes
+	From      JSONBytesFromString
+	To        JSONBytesFromString
 	Function  string
-	Code      JSONBytes
-	Arguments []JSONBytes
+	Code      JSONBytesFromString
+	Arguments []JSONBytesFromTree
 	GasPrice  JSONUint64
 	GasLimit  JSONUint64
 }
@@ -61,8 +61,8 @@ type TransactionResult struct {
 
 // LogEntry is a json object representing an expected transaction result log entry.
 type LogEntry struct {
-	Address    JSONBytes
-	Identifier JSONBytes
-	Topics     []JSONBytes
-	Data       JSONBytes
+	Address    JSONBytesFromString
+	Identifier JSONBytesFromString
+	Topics     []JSONBytesFromString
+	Data       JSONBytesFromString
 }

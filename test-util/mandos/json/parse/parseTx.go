@@ -71,7 +71,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 				return nil, fmt.Errorf("invalid block transaction value: %w", err)
 			}
 		case "arguments":
-			blt.Arguments, err = p.parseByteArrayList(kvp.Value)
+			blt.Arguments, err = p.parseSubTreeList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction arguments: %w", err)
 			}
@@ -79,7 +79,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 				return nil, errors.New("function arguments not allowed for transfer transactions")
 			}
 		case "contractCode":
-			blt.Code, err = p.processAnyValueAsByteArray(kvp.Value)
+			blt.Code, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block transaction contract code: %w", err)
 			}

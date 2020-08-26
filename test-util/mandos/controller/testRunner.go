@@ -1,6 +1,7 @@
 package mandoscontroller
 
 import (
+	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
 	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 )
@@ -18,11 +19,9 @@ type TestRunner struct {
 }
 
 // NewTestRunner creates new TestRunner instance.
-func NewTestRunner(executor TestExecutor, fileResolver mjparse.FileResolver) *TestRunner {
+func NewTestRunner(executor TestExecutor, fileResolver fr.FileResolver) *TestRunner {
 	return &TestRunner{
 		Executor: executor,
-		Parser: mjparse.Parser{
-			FileResolver: fileResolver,
-		},
+		Parser:   mjparse.NewParser(fileResolver),
 	}
 }

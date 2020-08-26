@@ -89,23 +89,23 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 	transactionOJ := oj.NewMap()
 	if tx.Type.HasSender() {
-		transactionOJ.Put("from", byteArrayToOJ(tx.From))
+		transactionOJ.Put("from", bytesFromStringToOJ(tx.From))
 	}
 	if tx.Type.HasReceiver() {
-		transactionOJ.Put("to", byteArrayToOJ(tx.To))
+		transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 	}
 	transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	if tx.Type == mj.ScCall {
 		transactionOJ.Put("function", stringToOJ(tx.Function))
 	}
 	if tx.Type == mj.ScDeploy {
-		transactionOJ.Put("contractCode", byteArrayToOJ(tx.Code))
+		transactionOJ.Put("contractCode", bytesFromStringToOJ(tx.Code))
 	}
 
 	if tx.Type == mj.ScCall || tx.Type == mj.ScDeploy {
 		var argList []oj.OJsonObject
 		for _, arg := range tx.Arguments {
-			argList = append(argList, byteArrayToOJ(arg))
+			argList = append(argList, bytesFromTreeToOJ(arg))
 		}
 		argOJ := oj.OJsonList(argList)
 		transactionOJ.Put("arguments", &argOJ)
@@ -123,9 +123,9 @@ func newAddressMocksToOJ(newAddressMocks []*mj.NewAddressMock) oj.OJsonObject {
 	var namList []oj.OJsonObject
 	for _, namEntry := range newAddressMocks {
 		namOJ := oj.NewMap()
-		namOJ.Put("creatorAddress", byteArrayToOJ(namEntry.CreatorAddress))
+		namOJ.Put("creatorAddress", bytesFromStringToOJ(namEntry.CreatorAddress))
 		namOJ.Put("creatorNonce", uint64ToOJ(namEntry.CreatorNonce))
-		namOJ.Put("newAddress", byteArrayToOJ(namEntry.NewAddress))
+		namOJ.Put("newAddress", bytesFromStringToOJ(namEntry.NewAddress))
 		namList = append(namList, namOJ)
 	}
 	namOJList := oj.OJsonList(namList)

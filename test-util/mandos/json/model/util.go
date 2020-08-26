@@ -7,7 +7,7 @@ import (
 )
 
 // ResultEqual returns true if result bytes encode the same number.
-func ResultEqual(expected JSONBytes, actual []byte) bool {
+func ResultEqual(expected JSONBytesFromString, actual []byte) bool {
 	if bytes.Equal(expected.Value, actual) {
 		return true
 	}
@@ -27,8 +27,8 @@ func ResultAsString(result [][]byte) string {
 	return str + "]"
 }
 
-// JSONBytesValues extracts values from a slice of JSONBytes into a list
-func JSONBytesValues(jbs []JSONBytes) [][]byte {
+// JSONBytesFromStringValues extracts values from a slice of JSONBytesFromString into a list
+func JSONBytesFromStringValues(jbs []JSONBytesFromString) [][]byte {
 	result := make([][]byte, len(jbs))
 	for i, jb := range jbs {
 		result[i] = jb.Value
@@ -36,14 +36,11 @@ func JSONBytesValues(jbs []JSONBytes) [][]byte {
 	return result
 }
 
-// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
-func JSONCheckBytesString(jcbs []JSONCheckBytes) string {
-	str := "["
-	for i, jcb := range jcbs {
-		if i > 0 {
-			str += ", "
-		}
-		str += "\"" + jcb.Original + "\""
+// JSONBytesFromTreeValues extracts values from a slice of JSONBytesFromTree into a list
+func JSONBytesFromTreeValues(jbs []JSONBytesFromTree) [][]byte {
+	result := make([][]byte, len(jbs))
+	for i, jb := range jbs {
+		result[i] = jb.Value
 	}
-	return str + "]"
+	return result
 }
