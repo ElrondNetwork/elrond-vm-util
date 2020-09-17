@@ -80,8 +80,8 @@ func (b *BlockchainHookMock) UpdateAccounts(
 		if len(modAcct.Code) > 0 {
 			acct.Code = modAcct.Code
 		}
-		if len(modAcct.Data) > 0 {
-			acct.AsyncCallData = string(modAcct.Data)
+		if len(modAcct.Data) > 0 && len(modAcct.Data[0]) > 0 {
+			acct.AsyncCallData = string(modAcct.Data[0])
 		}
 
 		for _, stu := range modAcct.StorageUpdates {
