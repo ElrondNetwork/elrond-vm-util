@@ -199,3 +199,10 @@ func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
 	metadata := vmcommon.CodeMetadataFromBytes(account.CodeMetadata)
 	return metadata.Payable, nil
 }
+
+func (b *BlockchainHookMock) SaveCompiledCode(_ []byte, _ []byte) {
+}
+
+func (b *BlockchainHookMock) GetCompiledCode(_ []byte) (bool, []byte) {
+	return false, nil
+}
