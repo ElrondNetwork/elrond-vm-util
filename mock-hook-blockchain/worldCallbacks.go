@@ -206,3 +206,6 @@ func (b *BlockchainHookMock) SaveCompiledCode(_ []byte, _ []byte) {
 func (b *BlockchainHookMock) GetCompiledCode(_ []byte) (bool, []byte) {
 	return false, nil
 }
+
+func (b *BlockchainHookMock) ClearCompiledCodes() {
+}
